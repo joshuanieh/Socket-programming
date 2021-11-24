@@ -7,6 +7,7 @@
 #include <fstream>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <filesystem>
 
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
@@ -16,8 +17,8 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {	
 	char *ip;
-	int port, i = 0;
-	string filename;
+	int port, i;
+	string filename, command;
 	ifstream file;
 	const char *d = ":";
 	ip = strtok((char *)argv[1], d);
@@ -35,21 +36,34 @@ int main(int argc, char const *argv[]) {
 	cout << "connect returns: " << connect(client_fd, (struct sockaddr*)&addr, sizeof(addr)) << endl;
 	cout << "connect errno: " << errno << endl;
 	cout << "Going to send some file?" << endl;
-	cin >> filename;
-	// cin.getline(buff, buff_len);
-	file.open(filename);
-	if(file.is_open()) {
-	    while(file.get(c) && i < buff_len) {
-	    	buff[i] = c;
-	    	i++;
-	    }
-	    cout << buff << endl;
-	  }
-  	else cout << "Unable to open file" << endl;
-	file.close();
-	cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
-	cout << "send returns: " << send(client_fd, buff, i - 1, 0) << endl;
-	cout << "send errno: " << errno << endl;
+	while(true) {
+		i = 0;
+		cin >> command;
+		if(command == "ls") cout << "send returns: " << send(client_fd, "ls", buff_len, 0) << endl;
+		else if(command == "put") {
+			cin >> filename;
+			// cin.getline(buff, buff_len);
+			file.open(filename);
+			if(file.is_open()) {
+			    while(file.get(c) && i < buff_len) {
+			    	buff[i] = c;
+			    	i++;
+			    }
+			    cout << buff << endl;
+			  }
+		  	else cout << "Unable to open file" << endl;
+			file.close();
+			cout << "send returns: " << send(client_fd, "put", buff_len, 0) << endl;
+			cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
+			cout << "send returns: " << send(client_fd, buff, i, 0) << endl;
+			cout << "send errno: " << errno << endl;
+		}
+		else if(command == "get") {}
+		else {
+			cout << "Command not found" << endl;
+			continue;
+		}
+	}
 	close(client_fd);
 	return 0;
 }

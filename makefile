@@ -6,6 +6,6 @@ server: server.o
 client: client.o
 	g++ $^ -o $@
 server.o: server.cpp
-	g++ -c $^ -o $@
+	g++ -std=c++17 -c $^ -o $@
 client.o: client.cpp
-	g++ -c $^ -o $@
+	g++ -std=c++17 -c $^ -o $@
