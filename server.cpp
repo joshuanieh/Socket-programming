@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
 	int o = true;
 	ofstream file;
 	char buff[buff_len];
-	fd_set fds;
+	fd_set readfds;
 	int client_fd, sockets[max_number_of_users] = {0}, max;
 	string fileroot = "./server_dir";
 	filesystem::create_directory(fileroot);
@@ -42,15 +42,17 @@ int main(int argc, char const *argv[])
 	cout << "listen errno: " << errno << endl;
 	setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&o, sizeof(o));
 	while(true){
-		FD_ZERO(&fds);
-	    FD_SET(socket_fd, &fds);
+		FD_ZERO(&readfds);
+	    FD_SET(socket_fd, &readfds);
 	    max = socket_fd;
         for(int i = 0; i < max_number_of_users; i++){
-            if(sockets[i] > 0) FD_SET(sockets[i], &fds);
+            if(sockets[i] > 0) {
+            	FD_SET(sockets[i], &readfds);
+            }
             if(sockets[i] > max) max = sockets[i];
         }
-        select(max + 1, &fds, NULL, NULL, NULL);
-        if(FD_ISSET(socket_fd, &fds)){
+        select(max + 1, &readfds, NULL, NULL, NULL);
+        if(FD_ISSET(socket_fd, &readfds)){
             client_fd = accept(socket_fd, (struct sockaddr *)NULL, (socklen_t *)NULL);
             for(int i = 0; i < max_number_of_users; i++){
                 if(sockets[i] == 0){
@@ -61,7 +63,7 @@ int main(int argc, char const *argv[])
             cout << "client_fd: " << client_fd << endl;
         }
         for(int i = 0; i < max_number_of_users; i++) {
-            if(FD_ISSET(sockets[i], &fds)) {
+            if(FD_ISSET(sockets[i], &readfds)) {
                 if(recv(sockets[i], buff, buff_len, 0) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
@@ -86,14 +88,17 @@ int main(int argc, char const *argv[])
 		                }
 		                else {
 		                	file.open(root/(string)buff);
-		                }
-		                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
-		                    close(sockets[i]);
-		                    sockets[i] = 0;
-		                }
-		                else {
-		                	cout << buff << endl;
-		                	file << buff;
+			                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+			                    file.close();
+			                    close(sockets[i]);
+			                    sockets[i] = 0;
+			                }
+			                else {
+			                	cout << buff << endl;
+			                	file << buff;
+			                	file.close();
+			                	// cout << "errno: " << errno << endl;
+			                }
 		                }
                     }
                 }

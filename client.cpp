@@ -54,13 +54,13 @@ int main(int argc, char const *argv[]) {
 			    	i++;
 			    }
 			    cout << buff << endl;
-			  }
+				cout << "send returns: " << send(client_fd, "put", buff_len, 0) << endl;
+				cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
+				cout << "send returns: " << send(client_fd, buff, i, 0) << endl;
+				cout << "send errno: " << errno << endl;
+			}
 		  	else cout << "The " << filename << " doesn’t exist" << endl;
 			file.close();
-			cout << "send returns: " << send(client_fd, "put", buff_len, 0) << endl;
-			cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
-			cout << "send returns: " << send(client_fd, buff, i, 0) << endl;
-			cout << "send errno: " << errno << endl;
 		}
 		else if(command == "get") {}
 		else {
