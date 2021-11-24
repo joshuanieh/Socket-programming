@@ -39,7 +39,11 @@ int main(int argc, char const *argv[]) {
 	while(true) {
 		i = 0;
 		cin >> command;
-		if(command == "ls") cout << "send returns: " << send(client_fd, "ls", buff_len, 0) << endl;
+		if(command == "ls") {
+			send(client_fd, "ls", buff_len, 0);
+			recv(client_fd, buff, buff_len, 0);
+			cout << buff;
+		}
 		else if(command == "put") {
 			cin >> filename;
 			// cin.getline(buff, buff_len);
@@ -51,7 +55,7 @@ int main(int argc, char const *argv[]) {
 			    }
 			    cout << buff << endl;
 			  }
-		  	else cout << "Unable to open file" << endl;
+		  	else cout << "The " << filename << " doesn’t exist" << endl;
 			file.close();
 			cout << "send returns: " << send(client_fd, "put", buff_len, 0) << endl;
 			cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
