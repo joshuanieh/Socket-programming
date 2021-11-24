@@ -18,9 +18,10 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {	
-	int o = true;
-	ofstream file;
-	char buff[buff_len];
+	int o = true, j;
+	ofstream ofile;
+	ifstream ifile;
+	char buff[buff_len], c;
 	fd_set readfds;
 	int client_fd, sockets[max_number_of_users] = {0}, max;
 	string fileroot = "./server_dir";
@@ -64,15 +65,16 @@ int main(int argc, char const *argv[])
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+            	memset(buff, '\0', buff_len);
+                if(recv(sockets[i], buff, 3, 0) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
                 }
                 else{
-                	// cout << buff << endl;
-                    if(strcmp(buff, "ls") == 0) {
+                	cout << buff << endl;
+                    if(strcmp(buff, "lsc") == 0) {
                     	// cout << root << endl;
-						memset(buff, '\0', sizeof(buff));
+						memset(buff, '\0', buff_len);
 					    for (const auto &file: filesystem::directory_iterator{root}) {
 					    	strcat(buff, file.path().filename().c_str());
 					    	strcat(buff, "\n");
@@ -82,22 +84,49 @@ int main(int argc, char const *argv[])
 					    send(sockets[i], buff, buff_len, 0);					    
                     }
                     else if(strcmp(buff, "put") == 0) {
+                    	memset(buff, '\0', buff_len);
                     	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                }
 		                else {
-		                	file.open(root/(string)buff);
+		                	ofile.open(root/(string)buff);
+		                	memset(buff, '\0', buff_len);
 			                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
-			                    file.close();
 			                    close(sockets[i]);
 			                    sockets[i] = 0;
 			                }
 			                else {
 			                	cout << buff << endl;
-			                	file << buff;
-			                	file.close();
+			                	ofile << buff;
 			                	// cout << "errno: " << errno << endl;
+			                }
+			                ofile.close();
+		                }
+                    }
+                    else if(strcmp(buff, "get") == 0) {
+                    	memset(buff, '\0', buff_len);
+                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+		                    close(sockets[i]);
+		                    sockets[i] = 0;
+		                }
+		                else {
+		                	ifile.open(root/(string)buff);
+		                	if(ifile.is_open()) {
+		                		send(sockets[i], "The file exists.", buff_len, 0);
+		                		j = 0;
+		                		memset(buff, '\0', buff_len);
+		                		while(ifile.get(c) && j < buff_len) {
+							    	buff[j] = c;
+							    	j++;
+							    	cout << "test" << endl;
+							    }
+							    cout << buff << endl;
+							    send(sockets[i], buff, buff_len, 0);
+			                	ifile.close();
+		                	}
+			                else {
+			                	send(sockets[i], ".", 16, 0);
 			                }
 		                }
                     }
@@ -105,26 +134,6 @@ int main(int argc, char const *argv[])
             }
         }
     }
-
-
-
-
-
-
-
-
-	// while(true){
-	// 	int client_fd = accept(socket_fd, (struct sockaddr *)NULL, NULL);
-	// 	cout << "client_fd: " << client_fd << endl;
-	// 	cout << "recv returns: " <<  << endl;
-	// 	cout << "file name: " << fileroot + (string)buff << endl;
-	// 	file.open(fileroot + '/' + (string)buff);
-	// 	cout << "recv returns: " << recv(client_fd, buff, buff_len, 0) << endl;
-	// 	cout << "content: " << buff << endl;
-	// 	file << buff;
-	// 	close(client_fd);
-	// 	file.close();
-	// }
 	close(socket_fd);
 	return 0;
 }

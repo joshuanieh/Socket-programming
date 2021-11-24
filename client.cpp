@@ -19,7 +19,8 @@ int main(int argc, char const *argv[]) {
 	char *ip;
 	int port, i;
 	string filename, command;
-	ifstream file;
+	ifstream ifile;
+	ofstream ofile;
 	const char *d = ":";
 	ip = strtok((char *)argv[1], d);
 	port = atoi(strtok(NULL, d));
@@ -40,32 +41,49 @@ int main(int argc, char const *argv[]) {
 		i = 0;
 		cin >> command;
 		if(command == "ls") {
-			send(client_fd, "ls", buff_len, 0);
+			send(client_fd, "lsc", 3, 0);
 			recv(client_fd, buff, buff_len, 0);
 			cout << buff;
 		}
 		else if(command == "put") {
 			cin >> filename;
 			// cin.getline(buff, buff_len);
-			file.open(filename);
-			if(file.is_open()) {
-			    while(file.get(c) && i < buff_len) {
+			ifile.open(filename);
+			if(ifile.is_open()) {
+				send(client_fd, "put", 3, 0);
+				send(client_fd, filename.c_str(), buff_len, 0);
+				memset(buff, '\0', buff_len);
+				while(ifile.get(c) && i < buff_len) {
 			    	buff[i] = c;
 			    	i++;
 			    }
 			    cout << buff << endl;
-				cout << "send returns: " << send(client_fd, "put", buff_len, 0) << endl;
-				cout << "send returns: " << send(client_fd, filename.c_str(), buff_len, 0) << endl;
-				cout << "send returns: " << send(client_fd, buff, i, 0) << endl;
-				cout << "send errno: " << errno << endl;
+				send(client_fd, buff, buff_len, 0);
+				cout << "put " << filename << " successfully" << endl;
+				ifile.close();
 			}
 		  	else cout << "The " << filename << " doesn’t exist" << endl;
-			file.close();
 		}
-		else if(command == "get") {}
+		else if(command == "get") {
+			cin >> filename;
+			// cin.getline(buff, buff_len);
+			send(client_fd, "get", 3, 0);
+			send(client_fd, filename.c_str(), filename.size(), 0);
+			recv(client_fd, buff, buff_len, 0);
+			cout << buff << endl;
+			if(strcmp(buff, "The file exists.") == 0) {
+				memset(buff, '\0', buff_len);
+				recv(client_fd, buff, buff_len, 0);
+				cout << buff << endl;
+				ofile.open(filename);
+				ofile << buff;
+				cout << "get " << filename << " successfully" << endl;
+				ofile.close();
+			}
+		  	else cout << "The " << filename << " doesn’t exist" << endl;
+		}
 		else {
 			cout << "Command not found" << endl;
-			continue;
 		}
 	}
 	close(client_fd);
