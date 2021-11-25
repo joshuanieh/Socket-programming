@@ -15,12 +15,16 @@
 #define buff_len 2048
 using namespace std;
 
-int main(int argc, char const *argv[]) {	
+int main(int argc, char const *argv[]) {
+	bool flag;
 	char *ip;
 	int port, i;
 	string filename, command;
 	ifstream ifile;
 	ofstream ofile;
+	string fileroot = "./client_dir";
+	filesystem::create_directory(fileroot);
+	const filesystem::path root{fileroot};
 	const char *d = ":";
 	ip = strtok((char *)argv[1], d);
 	port = atoi(strtok(NULL, d));
@@ -38,7 +42,7 @@ int main(int argc, char const *argv[]) {
 	cout << "connect errno: " << errno << endl;
 	cout << "Going to send some file?" << endl;
 	while(true) {
-		i = 0;
+		flag = true;
 		cin >> command;
 		if(command == "ls") {
 			send(client_fd, "lsc", 3, 0);
@@ -48,17 +52,27 @@ int main(int argc, char const *argv[]) {
 		else if(command == "put") {
 			cin >> filename;
 			// cin.getline(buff, buff_len);
-			ifile.open(filename);
+		    ifile.open(root/filename);
 			if(ifile.is_open()) {
 				send(client_fd, "put", 3, 0);
 				send(client_fd, filename.c_str(), buff_len, 0);
-				memset(buff, '\0', buff_len);
-				while(ifile.get(c) && i < buff_len) {
-			    	buff[i] = c;
-			    	i++;
-			    }
-			    cout << buff << endl;
-				send(client_fd, buff, buff_len, 0);
+				while(flag) {
+					i = 0;
+					memset(buff, '\0', buff_len);
+					while(i < buff_len) {
+				    	if(ifile.get(c)) {
+					    	buff[i] = c;
+					    	i++;
+					    }
+					    else {
+					    	flag = false;
+					    	break;
+					    }
+				    }
+				    cout << buff << endl;
+					send(client_fd, buff, buff_len, 0);
+				}
+				send(client_fd, "The file ends.", buff_len, 0);
 				cout << "put " << filename << " successfully" << endl;
 				ifile.close();
 			}
@@ -75,7 +89,7 @@ int main(int argc, char const *argv[]) {
 				memset(buff, '\0', buff_len);
 				recv(client_fd, buff, buff_len, 0);
 				cout << buff << endl;
-				ofile.open(filename);
+		    	ofile.open(root/filename);
 				ofile << buff;
 				cout << "get " << filename << " successfully" << endl;
 				ofile.close();

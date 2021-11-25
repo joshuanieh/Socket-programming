@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
 	int o = true, j;
 	ofstream ofile;
 	ifstream ifile;
-	char buff[buff_len], c;
+	char buff[max_number_of_users][buff_len], c;
 	fd_set readfds;
 	int client_fd, sockets[max_number_of_users] = {0}, max;
 	string fileroot = "./server_dir";
@@ -65,64 +65,66 @@ int main(int argc, char const *argv[])
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-            	memset(buff, '\0', buff_len);
-                if(recv(sockets[i], buff, 3, 0) <= 0) {
+            	memset(buff[i], '\0', buff_len);
+                if(recv(sockets[i], buff[i], 3, 0) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
                 }
                 else{
-                	cout << buff << endl;
-                    if(strcmp(buff, "lsc") == 0) {
+                	cout << buff[i] << endl;
+                    if(strcmp(buff[i], "lsc") == 0) {
                     	// cout << root << endl;
-						memset(buff, '\0', buff_len);
+						memset(buff[i], '\0', buff_len);
 					    for (const auto &file: filesystem::directory_iterator{root}) {
-					    	strcat(buff, file.path().filename().c_str());
-					    	strcat(buff, "\n");
+					    	strcat(buff[i], file.path().filename().c_str());
+					    	strcat(buff[i], "\n");
 					    	// cout << file.path().filename().string() << endl;
 					    }
 					    // cout << buff << endl;
-					    send(sockets[i], buff, buff_len, 0);					    
+					    send(sockets[i], buff[i], buff_len, 0);					    
                     }
-                    else if(strcmp(buff, "put") == 0) {
-                    	memset(buff, '\0', buff_len);
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    else if(strcmp(buff[i], "put") == 0) {
+                    	memset(buff[i], '\0', buff_len);
+                    	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                }
 		                else {
-		                	ofile.open(root/(string)buff);
-		                	memset(buff, '\0', buff_len);
-			                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
-			                    close(sockets[i]);
-			                    sockets[i] = 0;
-			                }
-			                else {
-			                	cout << buff << endl;
-			                	ofile << buff;
-			                	// cout << "errno: " << errno << endl;
-			                }
+		                	ofile.open(root/(string)buff[i]);
+		                	memset(buff[i], '\0', buff_len);
+		                	while(true) {
+				                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+				                    close(sockets[i]);
+				                    sockets[i] = 0;
+				                }
+				                else {
+				                	cout << buff[i] << endl;
+				                	if(strcmp(buff[i], "The file ends.") == 0) break;
+				                	ofile << buff[i];
+				                }
+				            }
 			                ofile.close();
 		                }
                     }
-                    else if(strcmp(buff, "get") == 0) {
-                    	memset(buff, '\0', buff_len);
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    else if(strcmp(buff[i], "get") == 0) {
+                    	memset(buff[i], '\0', buff_len);
+                    	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                }
 		                else {
-		                	ifile.open(root/(string)buff);
+		                	ifile.open(root/(string)buff[i]);
 		                	if(ifile.is_open()) {
 		                		send(sockets[i], "The file exists.", buff_len, 0);
 		                		j = 0;
-		                		memset(buff, '\0', buff_len);
+		                		memset(buff[i], '\0', buff_len);
 		                		while(ifile.get(c) && j < buff_len) {
-							    	buff[j] = c;
+							    	buff[i][j] = c;
 							    	j++;
 							    	cout << "test" << endl;
 							    }
-							    cout << buff << endl;
-							    send(sockets[i], buff, buff_len, 0);
+							    cout << buff[i] << endl;
+							    send(sockets[i], buff[i], buff_len, 0);
 			                	ifile.close();
 		                	}
 			                else {
