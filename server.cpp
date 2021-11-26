@@ -19,10 +19,11 @@ using namespace std;
 int main(int argc, char const *argv[])
 {	
 	long base[max_number_of_users];
-	int o = true, j;
+	bool flag;
+	int o = true, j, count[max_number_of_users];
 	fstream file[max_number_of_users];
 	char buff[max_number_of_users][buff_len], c;
-	string filename[max_number_of_users];
+	string filename[max_number_of_users], username[max_number_of_users] = {""};
 	fd_set readfds;
 	int client_fd, sockets[max_number_of_users] = {0}, max;
 	string fileroot = "./server_dir";
@@ -68,13 +69,15 @@ int main(int argc, char const *argv[])
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
             	memset(buff[i], '\0', buff_len);
-                if(recv(sockets[i], buff[i], 3, 0) <= 0) {
+                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
+                    username[i] = "";
                 }
                 else{
-                	cout << buff[i] << endl;
-                    if(strcmp(buff[i], "lsi") == 0) {
+                	// cout << buff[i] << endl;
+                	flag = true;
+                    if(strcmp(buff[i], "lsss") == 0) {
                     	// cout << root << endl;
 						memset(buff[i], '\0', buff_len);
 					    for (const auto &file: filesystem::directory_iterator{root}) {
@@ -85,60 +88,76 @@ int main(int argc, char const *argv[])
 					    // cout << buff << endl;
 					    send(sockets[i], buff[i], buff_len, 0);
                     }
-                    else if(strcmp(buff[i], "put") == 0) {
+                    else if(strcmp(buff[i], "putt") == 0) {
+                    	count[i] = 0;
                     	memset(buff[i], '\0', buff_len);
                     	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
+		                    username[i] = "";
 		                }
 		                else {
 		                	filename[i] = root/(string)buff[i];
-		                	memset(buff[i], '\0', buff_len);
-	                		// int z = recv(sockets[i], buff[i], buff_len, 0);
-	                		// cout << z << endl;
-			                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
-			                    close(sockets[i]);
-			                    sockets[i] = 0;
+		                	file[i].open(filename[i], ios::out);
+		                	file[i].close();
+		                }
+                    }
+                    else if(strcmp(buff[i], "puti") == 0) {
+                    	memset(buff[i], '\0', buff_len);
+                    	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+		                    close(sockets[i]);
+		                    sockets[i] = 0;
+		                    username[i] = "";
+		                }
+		                else {
+			                if(strcmp(buff[i], "The file ends.") == 0) {
+			                	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+				                    close(sockets[i]);
+				                    sockets[i] = 0;
+				                    username[i] = "";
+				                }
+			                	else {
+			                		count[i] *= buff_len;
+			                		count[i] -= atoi(buff[i]);
+			                		cout << 1 << endl;
+			                		cout << count[i] << endl;
+			                		char buffer[count[i]];
+			                		file[i].open(filename[i], ios::in);
+			                		file[i].read(buffer, sizeof(buffer));
+				                	file[i].close();
+				                	file[i].open(filename[i], ios::out);
+				                	file[i].write(buffer, sizeof(buffer));
+				                	file[i].close();
+			                	}
 			                }
 			                else {
 	                			file[i].open(filename[i], ios::app|ios::out);
 			                	file[i].write(buff[i], sizeof(buff[i]));
 			                	file[i].close();
+			                	count[i]++;
 			                }
 			                // while(file[sizeof(file) - 1] == '\0')
 		                }
                     }
-                    else if(strcmp(buff[i], "get") == 0) {
+                    else if(strcmp(buff[i], "gett") == 0) {
+                    	base[i] = 0;
                     	memset(buff[i], '\0', buff_len);
                     	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
+		                    username[i] = "";
 		                }
 		                else {
 		                	filename[i] = root/(string)buff[i];
 		                	file[i].open(filename[i], ios::in);
 		                	if(file[i].is_open()) {
 		                		send(sockets[i], "The file exists.", buff_len, 0);
-		                		j = 0;
-		                		memset(buff[i], '\0', buff_len);
-		                		while(file[i].get(c) && j < buff_len) {
-							    	buff[i][j] = c;
-							    	j++;
-							    }
-							    base[i] = j;
-							    send(sockets[i], buff[i], buff_len, 0);
-							    file[i].close();
-							    if(j != buff_len) {
-							    	send(sockets[i], "The file ends.", buff_len, 0);
-			                		file[i].close();
-			                	}
+		                		file[i].close();
 		                	}
-			                else {
-			                	send(sockets[i], ".", 16, 0);
-			                }
+			                else send(sockets[i], "The file doesn't exists.", buff_len, 0);
 		                }
                     }
-                    else if(strcmp(buff[i], "gti") == 0) {
+                    else if(strcmp(buff[i], "geti") == 0) {
                     	memset(buff[i], '\0', buff_len);
                 		j = 0;
 	                	file[i].open(filename[i], ios::in);
@@ -152,9 +171,35 @@ int main(int argc, char const *argv[])
 					    cout << buff[i] << endl;
 					    send(sockets[i], buff[i], buff_len, 0);
 	                	if(j != buff_len) {
-					    	send(sockets[i], "The file ends.", buff_len, 0);
-	                		file[i].close();
+	                		if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+			                    close(sockets[i]);
+			                    sockets[i] = 0;
+			                    username[i] = "";
+			                }
+			                else {
+			                	send(sockets[i], "The file ends.", buff_len, 0);
+						    	cout << base[i];
+				                send(sockets[i], to_string(base[i]).c_str(), buff_len, 0);
+			                }
 	                	}
+                    }
+                    else if(strcmp(buff[i], "logi") == 0) {
+                    	memset(buff[i], '\0', buff_len);
+                    	if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+		                    close(sockets[i]);
+		                    sockets[i] = 0;
+		                    username[i] = "";
+		                }
+                    	for(int k = 0; k < max_number_of_users; k++) {
+                    		if(strcmp(buff[i], username[k].c_str()) == 0) {
+                    			send(sockets[i], "username is in used, please try another", buff_len, 0);
+                    			flag = false;
+                    			break;
+                    		}
+                    	}
+                    	if(!flag) continue;
+                    	send(sockets[i], "connect successfully", buff_len, 0);
+                    	username[i] = buff[i];
                     }
                 }
             }

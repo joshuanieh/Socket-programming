@@ -18,8 +18,8 @@ using namespace std;
 int main(int argc, char const *argv[]) {
 	bool flag;
 	char *ip;
-	int port, i;
-	string filename, command;
+	int port, i, pos;
+	string line, filename, command, name;
 	fstream file;
 	string fileroot = "./client_dir";
 	filesystem::create_directory(fileroot);
@@ -39,17 +39,36 @@ int main(int argc, char const *argv[]) {
 	addr.sin_port = htons(port);
 	cout << "connect returns: " << connect(client_fd, (struct sockaddr*)&addr, sizeof(addr)) << endl;
 	cout << "connect errno: " << errno << endl;
-	cout << "Going to send some file?" << endl;
+	cout << "input your username:" << endl;
+	while(getline(cin, name)) {
+		send(client_fd, "logi", buff_len, 0);
+		send(client_fd, name.c_str(), buff_len, 0);
+		recv(client_fd, buff, buff_len, 0);
+		cout << buff << endl;
+		if(strcmp(buff, "connect successfully") == 0) break;
+	}
 	while(true) {
 		flag = true;
-		cin >> command;
+		getline(cin, line);
+		pos = line.find(" ");
+		command = line.substr(0, pos);
 		if(command == "ls") {
-			send(client_fd, "lsi", 3, 0);
+			if(pos != string::npos) {
+				cout << "Command format error" << endl;
+				continue;
+			}
+			send(client_fd, "lsss", buff_len, 0);
 			recv(client_fd, buff, buff_len, 0);
 			cout << buff;
 		}
 		else if(command == "put") {
-			cin >> filename;
+			if(line.find(" ", pos + 1) != string::npos) {
+				cout << "Command format error" << endl;
+				continue;
+			}
+			filename = line.substr(pos + 1);
+			send(client_fd, "putt", buff_len, 0);
+			send(client_fd, filename.c_str(), buff_len, 0);
 			// cin.getline(buff, buff_len);
 		    file.open(root/filename, ios::in);
 			if(file.is_open()) {
@@ -68,21 +87,27 @@ int main(int argc, char const *argv[]) {
 					    }
 				    }
 				    // cout << buff << endl;
-					send(client_fd, "put", 3, 0);
-					send(client_fd, filename.c_str(), buff_len, 0);
+					send(client_fd, "puti", buff_len, 0);
 					send(client_fd, buff, buff_len, 0);
 				}
-				// send(client_fd, "The file ends.", buff_len, 0);
+				send(client_fd, "puti", buff_len, 0);
+				send(client_fd, "The file ends.", buff_len, 0);
+				send(client_fd, to_string(buff_len - i).c_str(), buff_len, 0);
+				// cout <<  to_string(buff_len - i).c_str() << endl;
 				cout << "put " << filename << " successfully" << endl;
 				file.close();
 			}
 		  	else cout << "The " << filename << " doesn’t exist" << endl;
 		}
 		else if(command == "get") {
-			cin >> filename;
+			if(line.find(" ", pos + 1) != string::npos) {
+				cout << "Command format error" << endl;
+				continue;
+			}
+			filename = line.substr(pos + 1);
 			// cin.getline(buff, buff_len);
-			send(client_fd, "get", 3, 0);
-			send(client_fd, filename.c_str(), filename.size(), 0);
+			send(client_fd, "gett", buff_len, 0);
+			send(client_fd, filename.c_str(), buff_len, 0);
 			recv(client_fd, buff, buff_len, 0);
 			if(strcmp(buff, "The file exists.") != 0) {
 				cout << "The " << filename << " doesn’t exist" << endl;
@@ -91,9 +116,22 @@ int main(int argc, char const *argv[]) {
 			file.open(root/filename, ios::out);
 			file.close();
 			while(true) {
-				send(client_fd, "gti", 3, 0);
+		        memset(buff, '\0', buff_len);
+				send(client_fd, "geti", buff_len, 0);
 				recv(client_fd, buff, buff_len, 0);
-				if(strcmp(buff, "The file ends.") == 0) break;
+				cout << buff << endl;
+				if(strcmp(buff, "The file ends.") == 0) {
+					recv(client_fd, buff, buff_len, 0);
+					cout << buff << endl;
+            		char buffer[atoi(buff)];
+            		file.open(root/filename, ios::in);
+            		file.read(buffer, sizeof(buffer));
+                	file.close();
+                	file.open(root/filename, ios::out);
+                	file.write(buffer, sizeof(buffer));
+                	file.close();
+					break;
+				}
 		    	file.open(root/filename, ios::out|ios::app);
 				file.write(buff, sizeof(buff));
 				file.close();
