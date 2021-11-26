@@ -20,8 +20,7 @@ int main(int argc, char const *argv[]) {
 	char *ip;
 	int port, i;
 	string filename, command;
-	ifstream ifile;
-	ofstream ofile;
+	fstream file;
 	string fileroot = "./client_dir";
 	filesystem::create_directory(fileroot);
 	const filesystem::path root{fileroot};
@@ -45,36 +44,37 @@ int main(int argc, char const *argv[]) {
 		flag = true;
 		cin >> command;
 		if(command == "ls") {
-			send(client_fd, "lsc", 3, 0);
+			send(client_fd, "lsi", 3, 0);
 			recv(client_fd, buff, buff_len, 0);
 			cout << buff;
 		}
 		else if(command == "put") {
 			cin >> filename;
 			// cin.getline(buff, buff_len);
-		    ifile.open(filename);
-			if(ifile.is_open()) {
-				send(client_fd, "put", 3, 0);
-				send(client_fd, filename.c_str(), buff_len, 0);
+		    file.open(root/filename, ios::in);
+			if(file.is_open()) {
 				while(flag) {
 					i = 0;
 					memset(buff, '\0', buff_len);
 					while(i < buff_len) {
-				    	if(ifile.get(c)) {
+				    	if(file.get(c)) {
 					    	buff[i] = c;
 					    	i++;
+					    	// cout << "errno: " << c << endl;
 					    }
 					    else {
 					    	flag = false;
 					    	break;
 					    }
 				    }
-				    cout << buff << endl;
+				    // cout << buff << endl;
+					send(client_fd, "put", 3, 0);
+					send(client_fd, filename.c_str(), buff_len, 0);
 					send(client_fd, buff, buff_len, 0);
 				}
-				send(client_fd, "The file ends.", buff_len, 0);
+				// send(client_fd, "The file ends.", buff_len, 0);
 				cout << "put " << filename << " successfully" << endl;
-				ifile.close();
+				file.close();
 			}
 		  	else cout << "The " << filename << " doesn’t exist" << endl;
 		}
@@ -84,17 +84,21 @@ int main(int argc, char const *argv[]) {
 			send(client_fd, "get", 3, 0);
 			send(client_fd, filename.c_str(), filename.size(), 0);
 			recv(client_fd, buff, buff_len, 0);
-			cout << buff << endl;
-			if(strcmp(buff, "The file exists.") == 0) {
-				memset(buff, '\0', buff_len);
-				recv(client_fd, buff, buff_len, 0);
-				cout << buff << endl;
-		    	ofile.open(root/filename);
-				ofile << buff;
-				cout << "get " << filename << " successfully" << endl;
-				ofile.close();
+			if(strcmp(buff, "The file exists.") != 0) {
+				cout << "The " << filename << " doesn’t exist" << endl;
+				continue;
 			}
-		  	else cout << "The " << filename << " doesn’t exist" << endl;
+			file.open(root/filename, ios::out);
+			file.close();
+			while(true) {
+				send(client_fd, "gti", 3, 0);
+				recv(client_fd, buff, buff_len, 0);
+				if(strcmp(buff, "The file ends.") == 0) break;
+		    	file.open(root/filename, ios::out|ios::app);
+				file.write(buff, sizeof(buff));
+				file.close();
+			}
+			cout << "get " << filename << " successfully" << endl;
 		}
 		else {
 			cout << "Command not found" << endl;

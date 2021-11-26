@@ -18,9 +18,9 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {	
+	long base[max_number_of_users];
 	int o = true, j;
-	ofstream ofile;
-	ifstream ifile;
+	fstream file[max_number_of_users];
 	char buff[max_number_of_users][buff_len], c;
 	string filename[max_number_of_users];
 	fd_set readfds;
@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
                 }
                 else{
                 	cout << buff[i] << endl;
-                    if(strcmp(buff[i], "lsc") == 0) {
+                    if(strcmp(buff[i], "lsi") == 0) {
                     	// cout << root << endl;
 						memset(buff[i], '\0', buff_len);
 					    for (const auto &file: filesystem::directory_iterator{root}) {
@@ -93,22 +93,19 @@ int main(int argc, char const *argv[])
 		                }
 		                else {
 		                	filename[i] = root/(string)buff[i];
-		                	ofile.open(filename[i]);
-		                	ofile.close();
 		                	memset(buff[i], '\0', buff_len);
-		                	while(true) {
-				                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
-				                    close(sockets[i]);
-				                    sockets[i] = 0;
-				                }
-				                else {
-				                	cout << buff[i] << endl;
-				                	if(strcmp(buff[i], "The file ends.") == 0) break;
-		                			ofile.open(filename[i], ios_base::app);
-				                	ofile << buff[i];
-				                	ofile.close();
-				                }
-				            }
+	                		// int z = recv(sockets[i], buff[i], buff_len, 0);
+	                		// cout << z << endl;
+			                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
+			                    close(sockets[i]);
+			                    sockets[i] = 0;
+			                }
+			                else {
+	                			file[i].open(filename[i], ios::app|ios::out);
+			                	file[i].write(buff[i], sizeof(buff[i]));
+			                	file[i].close();
+			                }
+			                // while(file[sizeof(file) - 1] == '\0')
 		                }
                     }
                     else if(strcmp(buff[i], "get") == 0) {
@@ -118,24 +115,46 @@ int main(int argc, char const *argv[])
 		                    sockets[i] = 0;
 		                }
 		                else {
-		                	ifile.open(root/(string)buff[i]);
-		                	if(ifile.is_open()) {
+		                	filename[i] = root/(string)buff[i];
+		                	file[i].open(filename[i], ios::in);
+		                	if(file[i].is_open()) {
 		                		send(sockets[i], "The file exists.", buff_len, 0);
 		                		j = 0;
 		                		memset(buff[i], '\0', buff_len);
-		                		while(ifile.get(c) && j < buff_len) {
+		                		while(file[i].get(c) && j < buff_len) {
 							    	buff[i][j] = c;
 							    	j++;
-							    	cout << "test" << endl;
 							    }
-							    cout << buff[i] << endl;
+							    base[i] = j;
 							    send(sockets[i], buff[i], buff_len, 0);
-			                	ifile.close();
+							    file[i].close();
+							    if(j != buff_len) {
+							    	send(sockets[i], "The file ends.", buff_len, 0);
+			                		file[i].close();
+			                	}
 		                	}
 			                else {
 			                	send(sockets[i], ".", 16, 0);
 			                }
 		                }
+                    }
+                    else if(strcmp(buff[i], "gti") == 0) {
+                    	memset(buff[i], '\0', buff_len);
+                		j = 0;
+	                	file[i].open(filename[i], ios::in);
+                		file[i].seekg(base[i], ios::beg);
+                		while(file[i].get(c) && j < buff_len) {
+					    	buff[i][j] = c;
+					    	j++;
+					    }
+					    file[i].close();
+					    base[i] += j;
+					    cout << buff[i] << endl;
+					    send(sockets[i], buff[i], buff_len, 0);
+	                	if(j != buff_len) {
+					    	send(sockets[i], "The file ends.", buff_len, 0);
+	                		file[i].close();
+	                	}
                     }
                 }
             }
