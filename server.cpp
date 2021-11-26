@@ -12,7 +12,7 @@
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
-#define buff_len 2048
+#define buff_len 1024
 #define max_number_of_users 10
 using namespace std;
 
@@ -22,6 +22,7 @@ int main(int argc, char const *argv[])
 	ofstream ofile;
 	ifstream ifile;
 	char buff[max_number_of_users][buff_len], c;
+	string filename[max_number_of_users];
 	fd_set readfds;
 	int client_fd, sockets[max_number_of_users] = {0}, max;
 	string fileroot = "./server_dir";
@@ -47,6 +48,7 @@ int main(int argc, char const *argv[])
 	    FD_SET(socket_fd, &readfds);
 	    max = socket_fd;
         for(int i = 0; i < max_number_of_users; i++){
+            memset(buff[i], '\0', buff_len);
             if(sockets[i] > 0) {
             	FD_SET(sockets[i], &readfds);
             }
@@ -81,7 +83,7 @@ int main(int argc, char const *argv[])
 					    	// cout << file.path().filename().string() << endl;
 					    }
 					    // cout << buff << endl;
-					    send(sockets[i], buff[i], buff_len, 0);					    
+					    send(sockets[i], buff[i], buff_len, 0);
                     }
                     else if(strcmp(buff[i], "put") == 0) {
                     	memset(buff[i], '\0', buff_len);
@@ -90,7 +92,9 @@ int main(int argc, char const *argv[])
 		                    sockets[i] = 0;
 		                }
 		                else {
-		                	ofile.open(root/(string)buff[i]);
+		                	filename[i] = root/(string)buff[i];
+		                	ofile.open(filename[i]);
+		                	ofile.close();
 		                	memset(buff[i], '\0', buff_len);
 		                	while(true) {
 				                if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
@@ -100,10 +104,11 @@ int main(int argc, char const *argv[])
 				                else {
 				                	cout << buff[i] << endl;
 				                	if(strcmp(buff[i], "The file ends.") == 0) break;
+		                			ofile.open(filename[i], ios_base::app);
 				                	ofile << buff[i];
+				                	ofile.close();
 				                }
 				            }
-			                ofile.close();
 		                }
                     }
                     else if(strcmp(buff[i], "get") == 0) {

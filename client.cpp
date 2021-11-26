@@ -12,7 +12,7 @@
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
-#define buff_len 2048
+#define buff_len 1024
 using namespace std;
 
 int main(int argc, char const *argv[]) {
@@ -52,7 +52,7 @@ int main(int argc, char const *argv[]) {
 		else if(command == "put") {
 			cin >> filename;
 			// cin.getline(buff, buff_len);
-		    ifile.open(root/filename);
+		    ifile.open(filename);
 			if(ifile.is_open()) {
 				send(client_fd, "put", 3, 0);
 				send(client_fd, filename.c_str(), buff_len, 0);
