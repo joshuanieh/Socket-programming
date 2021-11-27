@@ -29,20 +29,15 @@ int main(int argc, char const *argv[])
 	string fileroot = "./server_dir";
 	filesystem::create_directory(fileroot);
 	const filesystem::path root{fileroot};
-	cout << fileroot << endl;
 	int port = atoi(argv[1]);
-	cout << "port: " << port << endl;
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = socket_domain;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = INADDR_ANY;
 	int socket_fd = socket(socket_domain, socket_type, socket_protocol);
-	cout << "socket errno: " << errno << endl;
-	cout << "bind returns: " << bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr)) << endl;
-	cout << "bind errno: " << errno << endl;
-	cout << "listen returns: " << listen(socket_fd, max_number_of_users) << endl;
-	cout << "listen errno: " << errno << endl;
+	bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
+	listen(socket_fd, max_number_of_users);
 	setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&o, sizeof(o));
 	while(true){
 		FD_ZERO(&readfds);
@@ -64,7 +59,6 @@ int main(int argc, char const *argv[])
                     break;
                 }
             }
-            cout << "client_fd: " << client_fd << endl;
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
@@ -85,7 +79,6 @@ int main(int argc, char const *argv[])
 					    	strcat(buff[i], "\n");
 					    	// cout << file.path().filename().string() << endl;
 					    }
-					    // cout << buff << endl;
 					    send(sockets[i], buff[i], buff_len, 0);
                     }
                     else if(strcmp(buff[i], "putt") == 0) {
@@ -119,15 +112,14 @@ int main(int argc, char const *argv[])
 			                	else {
 			                		count[i] *= buff_len;
 			                		count[i] -= atoi(buff[i]);
-			                		cout << 1 << endl;
-			                		cout << count[i] << endl;
-			                		char buffer[count[i]];
+			                		char *buffer = new char[count[i]];
 			                		file[i].open(filename[i], ios::in);
-			                		file[i].read(buffer, sizeof(buffer));
+			                		file[i].read(buffer, count[i]);
 				                	file[i].close();
 				                	file[i].open(filename[i], ios::out);
-				                	file[i].write(buffer, sizeof(buffer));
+				                	file[i].write(buffer, count[i]);
 				                	file[i].close();
+				                	delete [] buffer;
 			                	}
 			                }
 			                else {
@@ -168,7 +160,6 @@ int main(int argc, char const *argv[])
 					    }
 					    file[i].close();
 					    base[i] += j;
-					    cout << buff[i] << endl;
 					    send(sockets[i], buff[i], buff_len, 0);
 	                	if(j != buff_len) {
 	                		if(recv(sockets[i], buff[i], buff_len, 0) <= 0) {
@@ -178,7 +169,6 @@ int main(int argc, char const *argv[])
 			                }
 			                else {
 			                	send(sockets[i], "The file ends.", buff_len, 0);
-						    	cout << base[i];
 				                send(sockets[i], to_string(base[i]).c_str(), buff_len, 0);
 			                }
 	                	}
@@ -192,7 +182,7 @@ int main(int argc, char const *argv[])
 		                }
                     	for(int k = 0; k < max_number_of_users; k++) {
                     		if(strcmp(buff[i], username[k].c_str()) == 0) {
-                    			send(sockets[i], "username is in used, please try another", buff_len, 0);
+                    			send(sockets[i], "username is in used, please try another:", buff_len, 0);
                     			flag = false;
                     			break;
                     		}

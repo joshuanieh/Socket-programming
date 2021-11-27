@@ -27,18 +27,14 @@ int main(int argc, char const *argv[]) {
 	const char *d = ":";
 	ip = strtok((char *)argv[1], d);
 	port = atoi(strtok(NULL, d));
-	cout << "port: " << port << endl;
-	cout << "ip: " << ip << endl;
 	char buff[buff_len], c;
 	struct sockaddr_in addr;
 	int client_fd = socket(socket_domain, socket_type, socket_protocol);
-	cout << "socket errno: " << errno << endl;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = socket_domain;
 	addr.sin_addr.s_addr = inet_addr(ip);
 	addr.sin_port = htons(port);
-	cout << "connect returns: " << connect(client_fd, (struct sockaddr*)&addr, sizeof(addr)) << endl;
-	cout << "connect errno: " << errno << endl;
+	connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
 	cout << "input your username:" << endl;
 	while(getline(cin, name)) {
 		send(client_fd, "logi", buff_len, 0);
@@ -67,11 +63,10 @@ int main(int argc, char const *argv[]) {
 				continue;
 			}
 			filename = line.substr(pos + 1);
-			send(client_fd, "putt", buff_len, 0);
-			send(client_fd, filename.c_str(), buff_len, 0);
-			// cin.getline(buff, buff_len);
 		    file.open(root/filename, ios::in);
 			if(file.is_open()) {
+				send(client_fd, "putt", buff_len, 0);
+				send(client_fd, filename.c_str(), buff_len, 0);
 				while(flag) {
 					i = 0;
 					memset(buff, '\0', buff_len);
@@ -79,7 +74,6 @@ int main(int argc, char const *argv[]) {
 				    	if(file.get(c)) {
 					    	buff[i] = c;
 					    	i++;
-					    	// cout << "errno: " << c << endl;
 					    }
 					    else {
 					    	flag = false;
@@ -119,17 +113,17 @@ int main(int argc, char const *argv[]) {
 		        memset(buff, '\0', buff_len);
 				send(client_fd, "geti", buff_len, 0);
 				recv(client_fd, buff, buff_len, 0);
-				cout << buff << endl;
+				// cout << buff << endl;
 				if(strcmp(buff, "The file ends.") == 0) {
 					recv(client_fd, buff, buff_len, 0);
-					cout << buff << endl;
-            		char buffer[atoi(buff)];
+					char *buffer = new char[atoi(buff)];
             		file.open(root/filename, ios::in);
-            		file.read(buffer, sizeof(buffer));
+            		file.read(buffer, atoi(buff));
                 	file.close();
                 	file.open(root/filename, ios::out);
-                	file.write(buffer, sizeof(buffer));
+                	file.write(buffer, atoi(buff));
                 	file.close();
+                	delete [] buffer;
 					break;
 				}
 		    	file.open(root/filename, ios::out|ios::app);
