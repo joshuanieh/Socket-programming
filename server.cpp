@@ -73,9 +73,12 @@ int main(int argc, char const *argv[]) {
                 }
                 else{
                 	flag = true;
+                	if(strcmp(buff, "lsaf") == 0) {
+		                	filename[i] = root/username[i];
+
+                	}
                     if(strcmp(buff, "lsss") == 0) {
                     	// cout << root << endl;
-						memset(buff, '\0', buff_len);
 					    for (const auto &n: filesystem::directory_iterator{root}) filelist.push_back(n.path().filename().string());
 					    sort(filelist.begin(), filelist.end());
 					    for (const string &name: filelist) {
