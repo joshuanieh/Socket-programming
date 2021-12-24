@@ -2,3 +2,5 @@
 client
 server
 *.txt
+client_dir
+server_dir
