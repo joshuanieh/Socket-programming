@@ -66,14 +66,12 @@ int main(int argc, char const *argv[]) {
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                if(recv(sockets[i], buff, 5, MSG_WAITALL) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
                     username[i] = "";
                 }
                 else{
-                	if(strcmp(buff, "puti") != 0)
-                		cerr << buff << endl;
                 	flag = true;
                     if(strcmp(buff, "lsss") == 0) {
                     	// cout << root << endl;
@@ -89,7 +87,7 @@ int main(int argc, char const *argv[]) {
 					    send(sockets[i], buff, buff_len, MSG_NOSIGNAL);
                     }
                     else if(strcmp(buff, "putt") == 0) {
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    	if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                    username[i] = "";
@@ -98,7 +96,7 @@ int main(int argc, char const *argv[]) {
 		                	filename[i] = root/(string)buff;
 		                	file.open(filename[i], ios::out|ios::binary);
 		                	file.close();
-		                	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+		                	if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
 			                    close(sockets[i]);
 			                    sockets[i] = 0;
 			                    username[i] = "";
@@ -107,7 +105,7 @@ int main(int argc, char const *argv[]) {
 		                }
                     }
                     else if(strcmp(buff, "puti") == 0) {
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    	if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                    username[i] = "";
@@ -125,11 +123,10 @@ int main(int argc, char const *argv[]) {
 			                	file.close();
 		                	}
 		                }
-		                // send(sockets[i], "ok", buff_len)
                     }
                     else if(strcmp(buff, "gett") == 0) {
                     	base[i] = 0;
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    	if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                    username[i] = "";
@@ -162,7 +159,7 @@ int main(int argc, char const *argv[]) {
                     }
                     else if(strcmp(buff, "logi") == 0) {
                     	memset(buff, '\0', buff_len);
-                    	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+                    	if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
 		                    close(sockets[i]);
 		                    sockets[i] = 0;
 		                    username[i] = "";

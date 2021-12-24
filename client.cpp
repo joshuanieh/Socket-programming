@@ -17,6 +17,7 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
 	char *ip;
+	char cnd[5];
 	long long filesize;
 	int port, pos, num;
 	string line, filename, command, name;
@@ -38,9 +39,10 @@ int main(int argc, char const *argv[]) {
 	connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
 	cout << "input your username:" << endl;
 	while(getline(cin, name)) {
-		send(client_fd, "logi", buff_len, MSG_NOSIGNAL);
+		sprintf(cnd, "logi");
+		send(client_fd, cnd, 5, MSG_NOSIGNAL);
 		send(client_fd, name.c_str(), buff_len, MSG_NOSIGNAL);
-		recv(client_fd, buff, buff_len, 0);
+		recv(client_fd, buff, buff_len, MSG_WAITALL);
 		cout << buff << endl;
 		if(strcmp(buff, "connect successfully") == 0) break;
 	}
@@ -53,8 +55,9 @@ int main(int argc, char const *argv[]) {
 				cout << "Command format error" << endl;
 				continue;
 			}
-			send(client_fd, "lsss", buff_len, MSG_NOSIGNAL);
-			recv(client_fd, buff, buff_len, 0);
+			sprintf(cnd, "lsss");
+			send(client_fd, cnd, 5, MSG_NOSIGNAL);
+			recv(client_fd, buff, buff_len, MSG_WAITALL);
 			cout << buff;
 		}
 		else if(command == "put") {
@@ -68,14 +71,14 @@ int main(int argc, char const *argv[]) {
 				begin = file.tellg();
 				file.seekg(0, ios::end);
 				end = file.tellg();
-				send(client_fd, "putt", buff_len, MSG_NOSIGNAL);
+				sprintf(cnd, "putt");
+				send(client_fd, cnd, 5, MSG_NOSIGNAL);
 				send(client_fd, filename.c_str(), buff_len, MSG_NOSIGNAL);
 				send(client_fd, to_string(end - begin).c_str(), buff_len, MSG_NOSIGNAL);
 				file.seekg(0, ios::beg);
 				while(file.peek() != EOF) {
-					// memset(buff, '\0', buff_len);
-					// strcat(buff, "puti");
-					send(client_fd, "puti", buff_len, MSG_NOSIGNAL);
+					sprintf(cnd, "puti");
+					send(client_fd, cnd, 5, MSG_NOSIGNAL);
 					file.read(buff, buff_len);
 					send(client_fd, buff, buff_len, MSG_NOSIGNAL);
 				}
@@ -90,26 +93,29 @@ int main(int argc, char const *argv[]) {
 				continue;
 			}
 			filename = line.substr(pos + 1);
-			send(client_fd, "gett", buff_len, MSG_NOSIGNAL);
+			sprintf(cnd, "gett");
+			send(client_fd, cnd, 5, MSG_NOSIGNAL);
 			send(client_fd, filename.c_str(), buff_len, MSG_NOSIGNAL);
-			recv(client_fd, buff, buff_len, 0);;
+			recv(client_fd, buff, buff_len, MSG_WAITALL);;
 			if(strcmp(buff, "The file exists.") != 0) {
 				cout << "The " << filename << " doesn’t exist" << endl;
 				continue;
 			}
-			recv(client_fd, buff, buff_len, 0);
+			recv(client_fd, buff, buff_len, MSG_WAITALL);
 			filesize = atoll(buff);
 			file.open(root/filename, ios::out|ios::binary);
 			file.close();
 			for(long long l = 0; l < (filesize/buff_len); l++) {
-				send(client_fd, "geti", buff_len, MSG_NOSIGNAL);
-				recv(client_fd, buff, buff_len, 0);
+				sprintf(cnd, "geti");
+				send(client_fd, cnd, 5, MSG_NOSIGNAL);
+				recv(client_fd, buff, buff_len, MSG_WAITALL);
 				file.open(root/filename, ios::app|ios::out|ios::binary);
 				file.write(buff, buff_len);
 				file.close();
 			}
-			send(client_fd, "geti", buff_len, MSG_NOSIGNAL);
-			recv(client_fd, buff, buff_len, 0);
+			sprintf(cnd, "geti");
+			send(client_fd, cnd, 5, MSG_NOSIGNAL);
+			recv(client_fd, buff, buff_len, MSG_WAITALL);
 			file.open(root/filename, ios::app|ios::out|ios::binary);
 			file.write(buff, filesize%buff_len);
 			file.close();
