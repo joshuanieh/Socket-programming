@@ -74,8 +74,15 @@ int main(int argc, char const *argv[]) {
                 else{
                 	flag = true;
                 	if(strcmp(buff, "lsaf") == 0) {
-		                	filename[i] = root/username[i];
-
+		                for (const auto &n: filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().filename().string());
+					    sort(filelist.begin(), filelist.end());
+					    for (const string &name: filelist) {
+					    	strcat(buff, name.c_str());
+					    	strcat(buff, "\n");
+					    	// cout << file.path().filename().string() << endl;
+					    }
+					    filelist.clear();
+					    send(sockets[i], buff, buff_len, MSG_NOSIGNAL);
                 	}
                     if(strcmp(buff, "lsss") == 0) {
                     	// cout << root << endl;
