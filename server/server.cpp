@@ -15,7 +15,7 @@
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
-#define buff_len 512
+#define buff_len 1024
 #define max_number_of_users 10
 using namespace std;
 
@@ -23,17 +23,15 @@ int main(int argc, char const *argv[]) {
 	vector<string> filelist;
 	streampos begin, end, base[max_number_of_users];
 	bool flag;
-	char httpMessage[4096] = "";
+	string httpRequest, fileroot = "./";
+	const filesystem::path root{fileroot};
 	int o = true, j;
 	fstream file;
 	long long filesize[max_number_of_users];
-	char buff[buff_len], c;
+	char buff[buff_len], c, httpResponse[buff_len];
 	string filename[max_number_of_users], username[max_number_of_users] = {""};
 	fd_set readfds;
-	int client_fd, sockets[max_number_of_users] = {0}, max;
-	string fileroot = "./server_dir";
-	filesystem::create_directory(fileroot);
-	const filesystem::path root{fileroot};
+	int client_fd, sockets[max_number_of_users] = {0}, max, contentLengthPos, contentLength;
 	int port = atoi(argv[1]);
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
@@ -67,19 +65,64 @@ int main(int argc, char const *argv[]) {
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-                if(recv(sockets[i], buff, 6, MSG_WAITALL) <= 0) {
+                if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
                     username[i] = "";
                 }
                 else{
-                	strcat(httpMessage, buff);
-                	size_t len = strlen(httpMessage);
-                	if(httpMessage[len - 1] == '\n' && httpMessage[len - 2] == '\r') {
-                		cout << httpMessage << endl;
-                		strcpy(httpMessage, "");
+                	cout << buff << endl;
+                	httpRequest = buff;
+                	// if(httpRequest.substr(0, 3) == "GET") {
+                		// filename[i] = root/httpRequest.substr(5, httpRequest.find(" ", 4) - 5);
+                	// }
+
+                	////////////////////Login////////////////////
+                	if(httpRequest.substr(0, 4) == "POST") {
+                		contentLengthPos = httpRequest.find("Content-Length: ");
+                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
+                		username[i] = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4, contentLength);
+						filesystem::create_directory(username[i]);
+						// for (const auto &n: filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().filename().string());
+					 //    sort(filelist.begin(), filelist.end());
+					 //    for (const string &name: filelist) {
+					 //    	strcat(buff, name.c_str());
+					 //    	strcat(buff, "\n");
+					 //    	// cout << file.path().filename().string() << endl;
+					 //    }
+					 //    filelist.clear();
+					    strcpy(httpResponse, "HTTP/1.1 200 OK\r\n");
+					    send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
                 	}
+
+
+                	// httpRequestLine = "";
+                	// for (int i = 0; i < strlen(httpRequest); ++i)
+                	// {
+                	// 	if(httpRequest[i] == '\n') continue;
+                	// 	else if (httpRequest[i] == '\r' && httpRequest[i + 1] == '\n')
+                	// 	{
+                	// 		cout << httpRequestLine << endl;
+
+                	// 		httpRequestLine = "";
+                	// 		continue;
+                	// 	}
+                	// 	httpRequestLine += httpRequest[i];
+                	// }
+
+
+                	//print out http request
+                	// for (int i = 0; i < strlen(httpRequest); ++i)
+                	// {
+                	// 	if(httpRequest[i] == '\r') cout << "\\r";
+                	// 	else if(httpRequest[i] == '\n') cout << "\\n";
+                	// 	else cout << httpRequest[i];
+                	// }
+                	// strcpy(httpRequest, "");
+                	// cout << endl;
                 	// cout << buff << endl;
+
+
                 	// flag = true;
         //         	if(strcmp(buff, "lsaf") == 0) {
 		      //           for (const auto &n: filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().filename().string());
