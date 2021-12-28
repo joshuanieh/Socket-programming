@@ -72,6 +72,7 @@ int main(int argc, char const *argv[]) {
                     username[i] = "";
                 }
                 else{
+					cout << buff << endl;
                 	flag = true;
                 	if(strcmp(buff, "lsaf") == 0) {
 		                for (const auto &n: filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().filename().string());

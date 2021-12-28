@@ -1,13 +1,9 @@
-all: server client
+all: server/server
 	@echo -n ""
 
-server: server.o
+server/server: server/server.o
 	g++ $^ -o $@
-client: client.o
-	g++ $^ -o $@
-server.o: server.cpp
-	g++ -std=c++17 -c $^ -o $@
-client.o: client.cpp
+server/server.o: server/server.cpp
 	g++ -std=c++17 -c $^ -o $@
 
 clean:
