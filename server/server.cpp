@@ -71,6 +71,7 @@ int main(int argc, char const *argv[]) {
                     username[i] = "";
                 }
                 else{
+					cout << sockets[i] << endl;
                 	cout << buff << endl;
                 	httpRequest = buff;
                 	// if(httpRequest.substr(0, 3) == "GET") {

@@ -39,14 +39,26 @@ const useChat = () => {
     setOpened(true)
   }
 
+  // const sendData = (data) => {
+  //   // TODO
+  //   client.send(JSON.stringify(data))
+  // }
+
   const sendData = (data) => {
     // TODO
-    client.send(JSON.stringify(data))
+    console.log(data)
+    client.send(data)
   }
+
+  // const sendMessage = (msg) => {
+  //   // TODO
+  //   sendData(['input', msg])
+
+  // }
 
   const sendMessage = (msg) => {
     // TODO
-    sendData(['input', msg])
+    sendData(msg)
 
   }
 

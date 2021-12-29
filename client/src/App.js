@@ -40,58 +40,101 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-title">
-        <h1>Simple Chat</h1>
-        <Button type="primary" danger onClick={clearMessages}>
-          Clear
-        </Button>
-      </div>
-      <div className="App-messages">
-        {messages.length === 0 ? (
-          <p style={{ color: '#ccc' }}>
-            {opened? 'No messages...' : 'Loading...'}
-          </p>
-        ) : (
-          messages.map(({ name, body }, i) => (
-            <p className="App-message" key={i}>
-              <Tag color="blue">{name}</Tag> {body}
-            </p>
-          ))
-        )}
-      </div>
-      <Input
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        style={{ marginBottom: 10 }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            bodyRef.current.focus()
-          }
-        }}
-      ></Input>
-      <Input.Search
-        rows={4}
-        value={body}
-        ref={bodyRef}
-        enterButton="Send"
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="Type a message here..."
-        onSearch={(msg) => {
-          if (!msg || !username) {
-            displayStatus({
-              type: 'error',
-              msg: 'Please enter a username and a message body.'
-            })
-            return
-          }
-
-          sendMessage({ name: username, body: msg })
-          setBody('')
-        }}
-      ></Input.Search>
+      {!username ? 
+        <Input.Search
+          placeholder="Choose a username..."
+          enterButton="Continue"
+          ref={bodyRef}
+          style={{ marginBottom: 10 }}
+          onSearch={(msg) => {
+            !msg ? 
+              displayStatus({
+                type: 'error',
+                msg: 'Please enter a username.'
+              }) :
+              setUsername(msg)
+              sendMessage("Hello")
+          }}
+        ></Input.Search> :
+        <div>
+          <div className="App-title">
+            <h1>Simple Chat</h1>
+          </div>
+          <div className="App-messages">
+            {messages.length === 0 ? (
+              <p style={{ color: '#ccc' }}>
+                {opened? 'No messages...' : 'Loading...'}
+              </p>
+            ) : (
+              messages.map(({ name, body }, i) => (
+                <p className="App-message" key={i}>
+                  <Tag color="blue">{name}</Tag> {body}
+                </p>
+              ))
+            )}
+          </div>
+          <Button type="primary" danger onClick={clearMessages}>
+            Clear
+          </Button>
+        </div>
+      }
     </div>
   )
+
+//   return (
+//     <div className="App">
+      // <div className="App-title">
+      //   <h1>Simple Chat</h1>
+      //   <Button type="primary" danger onClick={clearMessages}>
+      //     Clear
+      //   </Button>
+      // </div>
+      // <div className="App-messages">
+      //   {messages.length === 0 ? (
+      //     <p style={{ color: '#ccc' }}>
+      //       {opened? 'No messages...' : 'Loading...'}
+      //     </p>
+      //   ) : (
+      //     messages.map(({ name, body }, i) => (
+      //       <p className="App-message" key={i}>
+      //         <Tag color="blue">{name}</Tag> {body}
+      //       </p>
+      //     ))
+      //   )}
+      // </div>
+//       <Input
+//         placeholder="Username"
+//         value={username}
+//         onChange={(e) => setUsername(e.target.value)}
+//         style={{ marginBottom: 10 }}
+//         onKeyDown={(e) => {
+//           if (e.key === 'Enter') {
+//             bodyRef.current.focus()
+//           }
+//         }}
+//       ></Input>
+//       <Input.Search
+//         rows={4}
+//         value={body}
+//         ref={bodyRef}
+//         enterButton="Send"
+//         onChange={(e) => setBody(e.target.value)}
+//         placeholder="Type a message here..."
+//         onSearch={(msg) => {
+//           if (!msg || !username) {
+//             displayStatus({
+//               type: 'error',
+//               msg: 'Please enter a username and a message body.'
+//             })
+//             return
+//           }
+
+//           sendMessage({ name: username, body: msg })
+//           setBody('')
+//         }}
+//       ></Input.Search>
+//     </div>
+//   )
 }
 
 export default App
