@@ -101,14 +101,14 @@ int main(int argc, char const *argv[]) {
 							for(auto &user : username) {
 								if(user == name) {
 					    			strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\nLogin fail");
-					    			send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    			send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 					    			flag = true;
 					    			break;
 								}
 							}
 							if(flag) continue;
 			    			strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\nLogin success");
-	                    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+	                    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 	                    	username[i] = name;
 							filesystem::create_directory(root/username[i]);
 						}
@@ -125,9 +125,9 @@ int main(int argc, char const *argv[]) {
 						    	// cout << file.path().filename().string() << endl;
 						    }
 						    filelist.clear();
-						    send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
-						
+
 						//Format: "Add {username}"
 						else if(data.substr(0, 3) == "Add") {
 							name = data.substr(4);
@@ -165,7 +165,7 @@ int main(int argc, char const *argv[]) {
 							file.read(buff, buff_len - strlen(httpResponse));
 							file.close();
 							strcat(httpResponse, buff);
-					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
 
 						//Format: "More"
@@ -177,7 +177,7 @@ int main(int argc, char const *argv[]) {
 							file.read(buff, buff_len - strlen(httpResponse));
 							file.close();
 							strcat(httpResponse, buff);
-					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
 
 						//Format: "Text {plain text}"
@@ -195,12 +195,12 @@ int main(int argc, char const *argv[]) {
 
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
 							strcat(httpResponse, "Text finish");
-					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 
 					    	for(int m = 0; m < max_number_of_users; m++) {
 					    		if (username[m] == chattingFriend[i]) {
 					    			if(chattingFriend[m] == username[i]) {
-					    				send(sockets[m], data.c_str(), buff_len, MSG_NOSIGNAL);
+					    				send(sockets[m], data.c_str(), data.size(), MSG_NOSIGNAL);
 					    			}
 					    			break;
 					    		}
@@ -248,12 +248,12 @@ int main(int argc, char const *argv[]) {
 
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
 							strcat(httpResponse, "File finish");
-					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 
 					    	for(int m = 0; m < max_number_of_users; m++) {
 					    		if (username[m] == chattingFriend[i]) {
 					    			if(chattingFriend[m] == username[i]) {
-					    				send(sockets[m], ("Filename " + filename[i]).c_str(), buff_len, MSG_NOSIGNAL);
+					    				send(sockets[m], ("Filename " + filename[i]).c_str(), ("Filename " + filename[i]).size(), MSG_NOSIGNAL);
 					    			}
 					    			break;
 					    		}
@@ -274,7 +274,7 @@ int main(int argc, char const *argv[]) {
 							file.read(buff, buff_len - strlen(httpResponse));
 							base[i] += buff_len - strlen(httpResponse);
 							strcat(httpResponse, buff);
-					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
 
 						//Format: "LeaveChat"
