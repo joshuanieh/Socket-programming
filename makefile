@@ -7,4 +7,4 @@ server/server.o: server/server.cpp
 	g++ -std=c++17 -c $^ -o $@
 
 clean:
-	rm -rf *.o server client server_dir client_dir
+	rm -rf *.o server/server server/server.o server_dir client_dir

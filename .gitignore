@@ -24,4 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 
 *.o
-server
+server_dir
+node_modules
+.vscode
+node_modules
