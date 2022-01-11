@@ -74,11 +74,12 @@ int main(int argc, char const *argv[]) {
 					cout << sockets[i] << endl;
                 	cout << buff << endl;
                 	httpRequest = buff;
-                	// if(httpRequest.substr(0, 3) == "GET") {
-                		// filename[i] = root/httpRequest.substr(5, httpRequest.find(" ", 4) - 5);
-                	// }
+                	if(httpRequest.substr(0, 3) == "GET") {
+                		//Handshake
+                		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {}
+                	}
 
-                	////////////////////Login////////////////////
+                	//Login
                 	if(httpRequest.substr(0, 4) == "POST") {
                 		contentLengthPos = httpRequest.find("Content-Length: ");
                 		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
