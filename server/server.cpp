@@ -74,37 +74,22 @@ int main(int argc, char const *argv[]) {
                 else{
 					cout << sockets[i] << endl;
                 	
+                	flag = false;
+                	httpRequest = buff;
                 	// print out http request
-                	for (int i = 0; i < strlen(httpRequest); ++i) {
+                	for (int i = 0; i < httpRequest.size(); ++i) {
                 		if(httpRequest[i] == '\r') cout << "\\r";
                 		else if(httpRequest[i] == '\n') cout << "\\n";
                 		else cout << httpRequest[i];
                 	}
                 	cout << endl;
 
-                	flag = false;
-                	httpRequest = buff;
                 	if(httpRequest.substr(0, 3) == "GET") {
                 		//Handshake
                 		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {}
-
-                		//Format: "List friends"
-                		//Return: all friends' names
-            			else if(data.substr(0, 12) == "List friends") {
-        					for (const auto &n : filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().stem().string());
-						    sort(filelist.begin(), filelist.end());
-						    strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-						    for (const string &friendName : filelist) {
-						    	strcat(httpResponse, friendName.c_str());
-						    	strcat(httpResponse, "\n");
-						    	// cout << file.path().filename().string() << endl;
-						    }
-						    filelist.clear();
-						    send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
-						}
                 	}
 
-                	if(httpRequest.substr(0, 4) == "POST") {
+                	else if(httpRequest.substr(0, 4) == "POST") {
                 		// contentLengthPos = httpRequest.find("Content-Length: ");
                 		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
                 		data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
@@ -128,13 +113,28 @@ int main(int argc, char const *argv[]) {
 							filesystem::create_directory(root/username[i]);
 						}
 
+						//Format: "List friends"
+                		//Return: all friends' names
+            			else if(data.substr(0, 12) == "List friends") {
+        					for (const auto &n : filesystem::directory_iterator{root/username[i]}) filelist.push_back(n.path().stem().string());
+						    sort(filelist.begin(), filelist.end());
+						    strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						    for (const string &friendName : filelist) {
+						    	strcat(httpResponse, friendName.c_str());
+						    	strcat(httpResponse, "\n");
+						    	// cout << file.path().filename().string() << endl;
+						    }
+						    filelist.clear();
+						    send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
+						}
+						
 						//Format: "Add {username}"
 						else if(data.substr(0, 3) == "Add") {
 							name = data.substr(4);
 							for(auto &user : username) {
 								if(user == name) {
-									filename[i] = root/username[i]/name + ".txt";
-									file.open(fileneme[i], ios::out|ios::binary|ios::app);
+									filename[i] = (root/username[i]/name).string() + ".txt";
+									file.open(filename[i], ios::out|ios::binary|ios::app);
 				                	file.close();
 									filesystem::create_directory(root/username[i]/name);
 					    			break;
@@ -147,8 +147,8 @@ int main(int argc, char const *argv[]) {
 							name = data.substr(7);
 							for(auto &user : username) {
 								if(user == name) {
-									filename[i] = root/username[i]/name + ".txt";
-									remove(fileneme[i]);
+									filename[i] = (root/username[i]/name).string() + ".txt";
+									remove(filename[i].c_str());
 									filesystem::remove_all(root/username[i]/name);
 					    			break;
 								}
@@ -158,25 +158,25 @@ int main(int argc, char const *argv[]) {
 						//Format: "Chat {username}"
 						else if(data.substr(0, 4) == "Chat") {
 							chattingFriend[i] = data.substr(5);
-							file.open(root/username[i]/chattingFriend[i] + ".txt", ios::in);
+							file.open((root/username[i]/chattingFriend[i]).string() + ".txt", ios::in);
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-							chatBase[i] = buff_len - httpResponse;
+							chatBase[i] = buff_len - strlen(httpResponse);
 							file.seekg(chatBase[i], ios::end);
-							file.read(data, buff_len - httpResponse);
+							file.read(buff, buff_len - strlen(httpResponse));
 							file.close();
-							strcat(httpResponse, data);
+							strcat(httpResponse, buff);
 					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
 						}
 
 						//Format: "More"
 						else if(data.substr(0, 4) == "More") {
-							file.open(root/username[i]/chattingFriend[i] + ".txt", ios::in);
+							file.open((root/username[i]/chattingFriend[i]).string() + ".txt", ios::in);
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-							chatBase[i] += buff_len - httpResponse;
+							chatBase[i] += buff_len - strlen(httpResponse);
 							file.seekg(chatBase[i], ios::end);
-							file.read(data, buff_len - httpResponse);
+							file.read(buff, buff_len - strlen(httpResponse));
 							file.close();
-							strcat(httpResponse, data);
+							strcat(httpResponse, buff);
 					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
 						}
 
@@ -185,12 +185,12 @@ int main(int argc, char const *argv[]) {
 						else if(data.substr(0, 4) == "Text") {
 							data = data.substr(5);
 
-							file.open(root/username[i]/chattingFriend[i] + ".txt", ios::out|ios::app);
-							file.write("A: " + data + "\n", data.size() + 4);
+							file.open((root/username[i]/chattingFriend[i]).string() + ".txt", ios::out|ios::app);
+							file.write(("A: " + data + "\n").c_str(), data.size() + 4);
 							file.close();
 
-							file.open(root/chattingFriend[i]/username[i] + ".txt", ios::out|ios::app);
-							file.write("B: " + data + "\n", data.size() + 4);
+							file.open((root/chattingFriend[i]/username[i]).string() + ".txt", ios::out|ios::app);
+							file.write(("B: " + data + "\n").c_str(), data.size() + 4);
 							file.close();
 
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
@@ -200,7 +200,7 @@ int main(int argc, char const *argv[]) {
 					    	for(int m = 0; m < max_number_of_users; m++) {
 					    		if (username[m] == chattingFriend[i]) {
 					    			if(chattingFriend[m] == username[i]) {
-					    				send(sockets[m], data, buff_len, MSG_NOSIGNAL);
+					    				send(sockets[m], data.c_str(), buff_len, MSG_NOSIGNAL);
 					    			}
 					    			break;
 					    		}
@@ -222,28 +222,28 @@ int main(int argc, char const *argv[]) {
 
 						//Format: "FileImme {data}"
 						else if(data.substr(0, 8) == "FileImme") {
-							data = substr(9);
+							data = data.substr(9);
 							contentLengthPos = httpRequest.find("Content-Length: ");
 	                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
 							
 							file.open(root/username[i]/chattingFriend[i]/filename[i], ios::out|ios::binary|ios::app);
-							file.write(data, contentLength);
+							file.write(data.c_str(), contentLength);
 							file.close();
 
 							file.open(root/chattingFriend[i]/username[i]/filename[i], ios::out|ios::binary|ios::app);
-							file.write(data, contentLength);
+							file.write(data.c_str(), contentLength);
 							file.close();
 						}
 
 						//Format: "FileFinish"
 						//Return: "File finish" to sender & "Filename {filename}" to receiver
 						else if(data.substr(0, 8) == "FileFinish") {
-							file.open(root/username[i]/chattingFriend[i] + ".txt", ios::out|ios::app);
-							file.write("AFile: " + filename[i] + "\n", filename[i].size() + 8);
+							file.open((root/username[i]/chattingFriend[i]).string() + ".txt", ios::out|ios::app);
+							file.write(("AFile: " + filename[i] + "\n").c_str(), filename[i].size() + 8);
 							file.close();
 
-							file.open(root/chattingFriend[i]/username[i] + ".txt", ios::out|ios::app);
-							file.write("BFile: " + filename[i] + "\n", filename[i].size() + 8);
+							file.open((root/chattingFriend[i]/username[i]).string() + ".txt", ios::out|ios::app);
+							file.write(("BFile: " + filename[i] + "\n").c_str(), filename[i].size() + 8);
 							file.close();
 
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
@@ -253,8 +253,7 @@ int main(int argc, char const *argv[]) {
 					    	for(int m = 0; m < max_number_of_users; m++) {
 					    		if (username[m] == chattingFriend[i]) {
 					    			if(chattingFriend[m] == username[i]) {
-					    				data = "Filename " + filename[i];
-					    				send(sockets[m], data, buff_len, MSG_NOSIGNAL);
+					    				send(sockets[m], ("Filename " + filename[i]).c_str(), buff_len, MSG_NOSIGNAL);
 					    			}
 					    			break;
 					    		}
@@ -272,17 +271,17 @@ int main(int argc, char const *argv[]) {
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
 							file.open(root/username[i]/chattingFriend[i]/filename[i], ios::in|ios::binary);
 							file.seekg(base[i], ios::end);
-							file.read(data, buff_len - httpResponse);
-							base[i] += buff_len - httpResponse;
-							strcat(httpResponse, data);
+							file.read(buff, buff_len - strlen(httpResponse));
+							base[i] += buff_len - strlen(httpResponse);
+							strcat(httpResponse, buff);
 					    	send(sockets[i], httpResponse, buff_len, MSG_NOSIGNAL);
 						}
 
 						//Format: "LeaveChat"
 						else if(data.substr(0, 9) == "LeaveChat") {
 							chattingFriend[i] = "";
-							chatBase[i] = 0
-							Base[i] = 0;
+							chatBase[i] = 0;
+							base[i] = 0;
 							filename[i] = "";
 						}
                 	}
