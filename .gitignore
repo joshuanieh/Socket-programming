@@ -30,3 +30,4 @@ node_modules
 server/server
 client/src/client
 server/server.o
+server/public
