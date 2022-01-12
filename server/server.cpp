@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <vector>
+#include "sha1.cpp"
 
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
@@ -19,7 +20,11 @@
 #define max_number_of_users 10
 using namespace std;
 
-int main(int argc, char const *argv[]) {	
+int main(int argc, char const *argv[]) {
+	int webSocketKeyPos;
+	string webSocketAccept, webSocketKey;
+	string response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
+	
 	vector<string> filelist;
 	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
 	bool flag;
@@ -65,7 +70,7 @@ int main(int argc, char const *argv[]) {
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-                if(recv(sockets[i], buff, buff_len, MSG_WAITALL) <= 0) {
+                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
                     close(sockets[i]);
                     sockets[i] = 0;
                     username[i] = "";
@@ -86,7 +91,20 @@ int main(int argc, char const *argv[]) {
 
                 	if(httpRequest.substr(0, 3) == "GET") {
                 		//Handshake
-                		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {}
+                		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {
+							webSocketKeyPos = httpRequest.find("Sec-WebSocket-Key: ");
+							if(webSocketKeyPos != string::npos) {
+								cout << "need Accept header" << endl;
+								webSocketKey = httpRequest.substr(webSocketKeyPos + 19, httpRequest.find("\r\n", webSocketKeyPos + 19) - webSocketKeyPos - 19);
+								webSocketAccept = webSocketAcceptGenerate(webSocketKey);
+								// cin >> webSocketAccept;
+								response = response + webSocketAccept + "\r\n\r\n";
+								cout << response << endl;
+								strcpy(buff, response.c_str());
+								send(sockets[i], buff, response.size(), MSG_NOSIGNAL);
+								// cout << "send finish" << endl;
+							}
+						}
                 	}
 
                 	else if(httpRequest.substr(0, 4) == "POST") {

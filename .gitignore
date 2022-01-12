@@ -27,5 +27,6 @@ yarn-error.log*
 server_dir
 node_modules
 .vscode
-./server/server
-./client/src/client
+server/server
+client/src/client
+server/server.o
