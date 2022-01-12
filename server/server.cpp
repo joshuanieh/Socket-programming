@@ -21,11 +21,20 @@
 using namespace std;
 
 int main(int argc, char const *argv[]) {
-	vector<string> filelist, allUsername;
-	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
-	bool flag;
+	int webSocketKeyPos;
+	string webSocketAccept, webSocketKey;
+	string response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
+	
 	string httpRequest, fileroot = "./public", name;
 	const filesystem::path root{fileroot};
+	vector<string> filelist, allUsername;
+	for (const auto &n : filesystem::directory_iterator{root}) {
+		if (n.is_directory())
+            allUsername.push_back(n.path().stem().string());
+	}
+	cout << allUsername[0] << endl;
+	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
+	bool flag;
 	int o = true, j;
 	fstream file;
 	long long filesize[max_number_of_users];
@@ -85,12 +94,28 @@ int main(int argc, char const *argv[]) {
                 	// 	else cout << httpRequest[i];
                 	// }
                 	cout << httpRequest << endl;
+				    
+                	if(httpRequest.substr(0, 3) == "GET") {
+                		//Handshake
+                		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {
+							webSocketKeyPos = httpRequest.find("Sec-WebSocket-Key: ");
+							if(webSocketKeyPos != string::npos) {
+								cout << "need Accept header" << endl;
+								webSocketKey = httpRequest.substr(webSocketKeyPos + 19, httpRequest.find("\r\n", webSocketKeyPos + 19) - webSocketKeyPos - 19);
+								webSocketAccept = webSocketAcceptGenerate(webSocketKey);
+								// cin >> webSocketAccept;
+								response = response + webSocketAccept + "\r\n\r\n";
+								cout << response << endl;
+								strcpy(buff, response.c_str());
+								send(sockets[i], buff, response.size(), MSG_NOSIGNAL);
+								// cout << "send finish" << endl;
+							}
+						}
+                	}
 
-                	if(httpRequest.substr(0, 4) == "POST") {
+                	else if(httpRequest.substr(0, 4) == "POST") {
                 		// contentLengthPos = httpRequest.find("Content-Length: ");
                 		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-         //        		strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-				    	// send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 						
                 		//Format: "Login {username}"
