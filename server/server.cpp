@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 	string webSocketAccept, webSocketKey;
 	string response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
 	
-	vector<string> filelist;
+	vector<string> filelist, allUsername;
 	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
 	bool flag;
 	string httpRequest, fileroot = "./", name;
@@ -113,21 +113,17 @@ int main(int argc, char const *argv[]) {
                 		data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 						
                 		//Format: "Login {username}"
-                		//Return: "Login fail" | "Login success"
 						if(data.substr(0, 5) == "Login") {
 							name = data.substr(6);
-							for(auto &user : username) {
+			    			username[i] = name;
+							for(auto &user : allUsername) {
 								if(user == name) {
-					    			strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\nLogin fail");
-					    			send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 					    			flag = true;
 					    			break;
 								}
 							}
 							if(flag) continue;
-			    			strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\nLogin success");
-	                    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-	                    	username[i] = name;
+							allUsername.push_back
 							filesystem::create_directory(root/username[i]);
 						}
 
@@ -149,12 +145,15 @@ int main(int argc, char const *argv[]) {
 						//Format: "Add {username}"
 						else if(data.substr(0, 3) == "Add") {
 							name = data.substr(4);
-							for(auto &user : username) {
+							for(auto &user : allUsername) {
 								if(user == name) {
-									filename[i] = (root/username[i]/name).string() + ".txt";
-									file.open(filename[i], ios::out|ios::binary|ios::app);
+									file.open((root/username[i]/name).string() + ".txt", ios::out|ios::binary|ios::app);
 				                	file.close();
 									filesystem::create_directory(root/username[i]/name);
+
+									file.open((root/name/username[i]).string() + ".txt", ios::out|ios::binary|ios::app);
+				                	file.close();
+									filesystem::create_directory(root/name/username[i]);
 					    			break;
 								}
 							}
