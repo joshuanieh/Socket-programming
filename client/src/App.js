@@ -78,6 +78,32 @@ function App() {
             onSearch={(msg) => {
               if(msg) {
                   ////////////////////////// sendMessage(`Login {username}`)
+                  const da = `Login ${msg}`
+                  const option = {
+                    hostname: '127.0.0.1',
+                    port: 4000,
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'text/plain',
+                      'Content-Length': da.length,
+                      'Sec-Fetch-Mode': 'no-cors'
+                    }
+                  }
+
+                  const req = http.request(option, res => {
+                    console.log(`statusCode: ${res.statusCode}`)
+
+                    res.on('data', d => {
+                      process.stdout.write(d)
+                    })
+                  })
+
+                  req.on('error', error => {
+                    console.error(error)
+                  })
+
+                  req.write(da)
+                  req.end()
                   setOptions(true)
               }
               else {
@@ -200,14 +226,15 @@ function App() {
                           // const da = JSON.stringify({
                           //   todo: 'Buy the milk'
                           // })
-                          const da = "HAHA"
+                          const da = "List friends"
                           const option = {
                             hostname: '127.0.0.1',
                             port: 4000,
                             method: 'POST',
                             headers: {
                               'Content-Type': 'text/plain',
-                              'Content-Length': da.length
+                              'Content-Length': da.length,
+                              'Sec-Fetch-Mode': 'no-cors'
                             }
                           }
 

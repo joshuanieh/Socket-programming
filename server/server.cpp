@@ -32,7 +32,6 @@ int main(int argc, char const *argv[]) {
 		if (n.is_directory())
             allUsername.push_back(n.path().stem().string());
 	}
-	cout << allUsername[0] << endl;
 	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
 	bool flag;
 	int o = true, j;
