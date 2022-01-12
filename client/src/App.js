@@ -91,12 +91,15 @@ function App() {
                   }
 
                   const req = http.request(option, res => {
+                    console.log("1")
+                    console.log(res)
                     console.log(`statusCode: ${res.statusCode}`)
 
                     res.on('data', d => {
                       process.stdout.write(d)
                     })
                   })
+                  console.log(req)
 
                   req.on('error', error => {
                     console.error(error)
@@ -259,6 +262,7 @@ function App() {
                           List all friends
                         </Button>
                         <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                          const da = "HAHA"
                           const option = {
                             hostname: '127.0.0.1',
                             port: 4000,

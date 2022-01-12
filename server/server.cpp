@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <vector>
-#include "sha1.cpp"
 
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
@@ -20,11 +19,7 @@
 #define max_number_of_users 10
 using namespace std;
 
-int main(int argc, char const *argv[]) {
-	int webSocketKeyPos;
-	string webSocketAccept, webSocketKey;
-	string response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ";
-	
+int main(int argc, char const *argv[]) {	
 	string httpRequest, fileroot = "./public", name;
 	const filesystem::path root{fileroot};
 	vector<string> filelist, allUsername;
@@ -93,32 +88,16 @@ int main(int argc, char const *argv[]) {
                 	// 	else cout << httpRequest[i];
                 	// }
                 	cout << httpRequest << endl;
-				    
-                	if(httpRequest.substr(0, 3) == "GET") {
-                		//Handshake
-                		if(httpRequest.find("Sec-WebSocket-Key: ") != string::npos) {
-							webSocketKeyPos = httpRequest.find("Sec-WebSocket-Key: ");
-							if(webSocketKeyPos != string::npos) {
-								cout << "need Accept header" << endl;
-								webSocketKey = httpRequest.substr(webSocketKeyPos + 19, httpRequest.find("\r\n", webSocketKeyPos + 19) - webSocketKeyPos - 19);
-								webSocketAccept = webSocketAcceptGenerate(webSocketKey);
-								// cin >> webSocketAccept;
-								response = response + webSocketAccept + "\r\n\r\n";
-								cout << response << endl;
-								strcpy(buff, response.c_str());
-								send(sockets[i], buff, response.size(), MSG_NOSIGNAL);
-								// cout << "send finish" << endl;
-							}
-						}
-                	}
-
-                	else if(httpRequest.substr(0, 4) == "POST") {
+				    if(httpRequest.substr(0, 4) == "POST") {
                 		// contentLengthPos = httpRequest.find("Content-Length: ");
                 		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
 						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
+
+						cout << data << endl;
 						
                 		//Format: "Login {username}"
 						if(data.substr(0, 5) == "Login") {
+							cout << "a" << endl;
 							name = data.substr(6);
 			    			username[i] = name;
 							for(auto &user : allUsername) {
@@ -129,6 +108,7 @@ int main(int argc, char const *argv[]) {
 							}
 							if(flag) continue;
 							allUsername.push_back(name);
+							send(sockets[i], "1234567890", 10, MSG_NOSIGNAL);
 							filesystem::create_directory(root/username[i]);
 						}
 
