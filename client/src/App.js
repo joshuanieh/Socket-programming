@@ -109,6 +109,7 @@ function App() {
               Add a friend
             </Button>
             <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+              sendMessage(`List friends`)
               setRemoveFriend(true)
             }}>
               Remove a friend
