@@ -89,7 +89,9 @@ int main(int argc, char const *argv[]) {
                 	if(httpRequest.substr(0, 4) == "POST") {
                 		// contentLengthPos = httpRequest.find("Content-Length: ");
                 		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-                		data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
+         //        		strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+				    	// send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 						
                 		//Format: "Login {username}"
 						if(data.substr(0, 5) == "Login") {
