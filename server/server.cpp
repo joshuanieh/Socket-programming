@@ -123,7 +123,7 @@ int main(int argc, char const *argv[]) {
 								}
 							}
 							if(flag) continue;
-							allUsername.push_back
+							allUsername.push_back(name);
 							filesystem::create_directory(root/username[i]);
 						}
 
@@ -143,6 +143,7 @@ int main(int argc, char const *argv[]) {
 						}
 
 						//Format: "Add {username}"
+						//Return: "Add successfully" | "Add fail"
 						else if(data.substr(0, 3) == "Add") {
 							name = data.substr(4);
 							for(auto &user : allUsername) {
@@ -154,22 +155,29 @@ int main(int argc, char const *argv[]) {
 									file.open((root/name/username[i]).string() + ".txt", ios::out|ios::binary|ios::app);
 				                	file.close();
 									filesystem::create_directory(root/name/username[i]);
+
+						    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						    		strcat(httpResponse, "Add successfully");
+								    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+					    			flag = true;
 					    			break;
 								}
 							}
+							if(flag) continue;
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+				    		strcat(httpResponse, "Add fail");
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
 
 						//Format: "Remove {username}"
 						else if(data.substr(0, 6) == "Remove") {
 							name = data.substr(7);
-							for(auto &user : username) {
-								if(user == name) {
-									filename[i] = (root/username[i]/name).string() + ".txt";
-									remove(filename[i].c_str());
-									filesystem::remove_all(root/username[i]/name);
-					    			break;
-								}
-							}
+							
+							remove(((root/username[i]/name).string() + ".txt").c_str());
+							filesystem::remove_all(root/username[i]/name);
+
+							remove(((root/name/username[i]).string() + ".txt").c_str());
+							filesystem::remove_all(root/name/username[i]);
 						}
 
 						//Format: "Chat {username}"
