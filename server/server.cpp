@@ -82,12 +82,13 @@ int main(int argc, char const *argv[]) {
                 	flag = false;
                 	httpRequest = buff;
                 	// print out http request
-                	for (int i = 0; i < httpRequest.size(); ++i) {
-                		if(httpRequest[i] == '\r') cout << "\\r";
-                		else if(httpRequest[i] == '\n') cout << "\\n";
-                		else cout << httpRequest[i];
-                	}
-                	cout << endl;
+                	// for (int i = 0; i < httpRequest.size(); ++i) {
+                	// 	if(httpRequest[i] == '\r') cout << "\\r";
+                	// 	else if(httpRequest[i] == '\n') cout << "\\n";
+                	// 	else cout << httpRequest[i];
+                	// }
+					cout << httpRequest << endl;
+                	// cout << endl;
 
                 	if(httpRequest.substr(0, 3) == "GET") {
                 		//Handshake
