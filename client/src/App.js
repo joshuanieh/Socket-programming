@@ -24,6 +24,7 @@ function App() {
   // }).end();
   const [id, setID] = useState(0)
   const [messages, setMessages] = useState("")
+  const [friends, setFriends] = useState([])
   const [textFinish, setTextFinish] = useState("")
   const [username, setUsername] = useState('')
   const [options, setOptions] = useState(false)
@@ -34,6 +35,8 @@ function App() {
   const [body, setBody] = useState('')
 
   const bodyRef = useRef(null)
+
+  let friendList = []
 
   const displayStatus = (s) => {
     if (s.msg) {
@@ -86,17 +89,16 @@ function App() {
                     headers: {
                       'Content-Type': 'text/plain',
                       'Content-Length': da.length,
-                      'Sec-Fetch-Mode': 'no-cors'
                     }
                   }
 
                   const req = http.request(option, res => {
-                    console.log("1")
                     console.log(res)
                     console.log(`statusCode: ${res.statusCode}`)
 
                     res.on('data', d => {
-                      process.stdout.write(d)
+                      console.log(d)
+                      setID(d);
                     })
                   })
                   console.log(req)
@@ -126,9 +128,14 @@ function App() {
               <h1>All friends</h1>
             </div>
             <div>
-              <p className="App-message">
-                <Tag color="blue">{messages}</Tag>
-              </p>
+              {friends.map((e, i) => (
+                !(i%2) ?
+                  <p className="App-message" key={i}>
+                    <Tag color="blue">{e}</Tag>
+                  </p>
+                  :
+                  <></>
+              ))}
             </div>
             <Button type="primary" danger onClick={() => {
               setListFriends(false)
@@ -206,9 +213,11 @@ function App() {
                           <h1>Chat room</h1>
                         </div>
                         <div>
-                          <p className="App-message">
-                            <Tag color="blue">{messages}</Tag>
-                          </p>
+                          {friends.map((e,i) => (
+                            <p className="App-message" key={i}>
+                              <Tag color="blue">{e}</Tag>
+                            </p>
+                          ))}
                         </div>
                         <Button type="primary" danger onClick={() => {
                           setChatRoom(false)
@@ -237,7 +246,6 @@ function App() {
                             headers: {
                               'Content-Type': 'text/plain',
                               'Content-Length': da.length,
-                              'Sec-Fetch-Mode': 'no-cors'
                             }
                           }
 
@@ -245,7 +253,13 @@ function App() {
                             console.log(`statusCode: ${res.statusCode}`)
 
                             res.on('data', d => {
-                              process.stdout.write(d)
+                              console.log(d)
+                              friendList = []
+                              for(var i=0; i<d.length; i++){
+                                friendList.push(String.fromCharCode(d[i]))
+                              }
+                              console.log(friendList)
+                              setFriends(friendList)
                             })
                           })
 
@@ -253,8 +267,7 @@ function App() {
                             console.error(error)
                           })
 
-                          req.write(id)
-                          req.write()
+                          req.write(`List friends ${id}`)
                           req.end()
                           /////////////////////////////
                           setListFriends(true)
