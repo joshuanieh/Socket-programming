@@ -22,6 +22,7 @@ function App() {
   //     agent: agent, // use this agent for more requests as needed
   //     data: 'lll'
   // }).end();
+  const [id, setID] = useState(0)
   const [messages, setMessages] = useState("")
   const [textFinish, setTextFinish] = useState("")
   const [username, setUsername] = useState('')
@@ -222,7 +223,8 @@ function App() {
                             console.error(error)
                           })
 
-                          req.write(da)
+                          req.write(id)
+                          req.write()
                           req.end()
                           /////////////////////////////
                           setListFriends(true)
@@ -230,6 +232,32 @@ function App() {
                           List all friends
                         </Button>
                         <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                          const option = {
+                            hostname: '127.0.0.1',
+                            port: 4000,
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'text/plain',
+                              'Content-Length': da.length
+                            }
+                          }
+
+                          const req = http.request(option, res => {
+                            console.log(`statusCode: ${res.statusCode}`)
+
+                            res.on('data', d => {
+                              process.stdout.write(d)
+                            })
+                          })
+
+                          req.on('error', error => {
+                            console.error(error)
+                          })
+
+                          req.write(id)
+                          req.write()
+                          req.end()
+                          /////////////////////////////
                           setAddFriend(true)
                         }}>
                           Add friends
