@@ -28,7 +28,7 @@ int main(int argc, char const *argv[]) {
 	vector<string> filelist, allUsername;
 	streampos begin, end, base[max_number_of_users], chatBase[max_number_of_users];
 	bool flag;
-	string httpRequest, fileroot = "./", name;
+	string httpRequest, fileroot = "./public", name;
 	const filesystem::path root{fileroot};
 	int o = true, j;
 	fstream file;
@@ -47,6 +47,7 @@ int main(int argc, char const *argv[]) {
 	bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
 	listen(socket_fd, max_number_of_users);
 	setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&o, sizeof(o));
+    filesystem::create_directory(root);
 	while(true){
 		FD_ZERO(&readfds);
 	    FD_SET(socket_fd, &readfds);
@@ -87,8 +88,7 @@ int main(int argc, char const *argv[]) {
                 	// 	else if(httpRequest[i] == '\n') cout << "\\n";
                 	// 	else cout << httpRequest[i];
                 	// }
-					cout << httpRequest << endl;
-                	// cout << endl;
+                	cout << httpRequest << endl;
 
                 	if(httpRequest.substr(0, 3) == "GET") {
                 		//Handshake
@@ -144,7 +144,7 @@ int main(int argc, char const *argv[]) {
 						}
 
 						//Format: "Add {username}"
-						//Return: "Add successfully" | "Add fail"
+						//(removed)Return: "Add successfully" | "Add fail"
 						else if(data.substr(0, 3) == "Add") {
 							name = data.substr(4);
 							for(auto &user : allUsername) {
@@ -157,17 +157,17 @@ int main(int argc, char const *argv[]) {
 				                	file.close();
 									filesystem::create_directory(root/name/username[i]);
 
-						    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-						    		strcat(httpResponse, "Add successfully");
-								    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-					    			flag = true;
+						    		// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						    		// strcat(httpResponse, "Add successfully");
+								    // send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+					    			// flag = true;
 					    			break;
 								}
 							}
-							if(flag) continue;
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-				    		strcat(httpResponse, "Add fail");
-						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							// if(flag) continue;
+							// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+				   //  		strcat(httpResponse, "Add fail");
+						 //    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						}
 
 						//Format: "Remove {username}"

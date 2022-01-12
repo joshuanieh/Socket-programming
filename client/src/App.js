@@ -70,10 +70,10 @@ function App() {
         </div> 
         : 
         <>
-        {addFriend | removeFriend | listFriends | chatRoom ?
+        {listFriends ?
           <div>
             <div className="App-title">
-              <h1>Chat</h1>
+              <h1>All friends</h1>
             </div>
             <div className="App-messages">
               {messages.length === 0 ? (
@@ -81,15 +81,15 @@ function App() {
                   {opened? 'No messages...' : 'Loading...'}
                 </p>
               ) : (
-                messages.map(({ name, body }, i) => (
-                  <p className="App-message" key={i}>
-                    <Tag color="blue">{name}</Tag> {body}
-                  </p>
-                ))
+                <p className="App-message">
+                  <Tag color="blue">{messages}</Tag>
+                </p>
               )}
             </div>
-            <Button type="primary" danger onClick={clearMessages}>
-              Clear
+            <Button type="primary" danger onClick={() => {
+              setListFriends(false)
+            }}>
+              Leave
             </Button>
            </div>
           : 
