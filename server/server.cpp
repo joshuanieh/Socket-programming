@@ -215,12 +215,15 @@ int main(int argc, char const *argv[]) {
 
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
-						// file.seekg (0, ios::end);
-					 //    int length = file.tellg();
-					    chatBase[index] = buff_len - strlen(httpResponse);
-						// file.seekg(chatBase[index], ios::end);
-						strcpy(buff, "");
-						file.read(buff, buff_len - strlen(httpResponse));
+						file.seekg (0, ios::end);
+					    int length = file.tellg();
+					    cout << "len: " << length << endl;
+					    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
+						file.seekg(- chatBase[index], ios::end);
+						cout << chatBase[index] << endl;
+						cout << file.tellg() << endl;
+						memset(buff, '\0', buff_len);
+						file.read(buff, chatBase[index]);
 						file.close();
 						strcat(httpResponse, buff);
 						cout << "buff: " << buff << endl;
