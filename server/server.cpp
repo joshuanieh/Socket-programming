@@ -148,7 +148,7 @@ int main(int argc, char const *argv[]) {
 					}
 
 					//Format: "Add {username} {number}"
-					//Return: "Add successfully" | "Add fail"
+					//Return: "0" | "1"
 					else if(data.substr(0, 3) == "Add") {
 						int sep = data.find(" ", 4);
 						name = data.substr(4, sep - 4);
@@ -184,6 +184,7 @@ int main(int argc, char const *argv[]) {
 					}
 
 					//Format: "Remove {username} {number}"
+					//Return: "0"
 					else if(data.substr(0, 6) == "Remove") {
 						int sep = data.find(" ", 7);
 						name = data.substr(7, sep - 7);
@@ -194,6 +195,13 @@ int main(int argc, char const *argv[]) {
 
 						remove(((root/name/allUsername[index]).string() + ".txt").c_str());
 						filesystem::remove_all(root/name/allUsername[index]);
+
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+			    		strcat(httpResponse, "0");
+					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						cout << httpResponse << endl;
+						close(sockets[i]);
+						sockets[i] = 0;
 					}
 
 					//Format: "Chat {username} {number}"
