@@ -112,7 +112,7 @@ int main(int argc, char const *argv[]) {
 		    			sprintf(httpResponse, "%s%d", httpResponse, k);
 					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 		    			allUsername.push_back(name);
-						filesystem::create_directory(root/allUsername[index]);
+						filesystem::create_directory(root/name);
 					}
 
 					//Format: "List friends {number}"
