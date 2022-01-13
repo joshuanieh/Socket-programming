@@ -100,14 +100,15 @@ int main(int argc, char const *argv[]) {
 						for(k; k < allUsername.size(); i++) {
 							if(allUsername[k] == name) {
 				    			flag = true;
-							    strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+							    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 				    			sprintf(httpResponse, "%s%d", httpResponse, k);
+								cout << httpResponse << endl;
 							    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 				    			break;
 							}
 						}
 						if(flag) continue;
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 		    			sprintf(httpResponse, "%s%d", httpResponse, k);
 					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 		    			allUsername.push_back(name);
@@ -121,13 +122,14 @@ int main(int argc, char const *argv[]) {
 
     					for (const auto &n : filesystem::directory_iterator{root/allUsername[index]}) filelist.push_back(n.path().stem().string());
 					    sort(filelist.begin(), filelist.end());
-					    strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+					    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 					    for (const string &friendName : filelist) {
 					    	strcat(httpResponse, friendName.c_str());
 					    	strcat(httpResponse, "\n");
 					    	// cout << file.path().filename().string() << endl;
 					    }
 					    filelist.clear();
+						cout << httpResponse << endl;
 					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 					}
 
@@ -182,7 +184,7 @@ int main(int argc, char const *argv[]) {
         				chattingFriend[index] = name;
 
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 						chatBase[index] = buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
 						file.read(buff, buff_len - strlen(httpResponse));
@@ -195,7 +197,7 @@ int main(int argc, char const *argv[]) {
 					else if(data.substr(0, 4) == "More") {
         				index = stoi(data.substr(5));
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 						chatBase[index] += buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
 						file.read(buff, buff_len - strlen(httpResponse));
@@ -217,18 +219,18 @@ int main(int argc, char const *argv[]) {
 						file.write(("B: " + data + "\n").c_str(), data.size() + 4);
 						file.close();
 
-						// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-						// strcat(httpResponse, "Text finish");
-				  //   	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						strcat(httpResponse, "Text finish");
+				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 
-				    	// for(int m = 0; m < max_number_of_users; m++) {
-				    	// 	if (username[m] == chattingFriend[i]) {
-				    	// 		if(chattingFriend[m] == username[i]) {
-				    	// 			send(sockets[m], data.c_str(), data.size(), MSG_NOSIGNAL);
-				    	// 		}
-				    	// 		break;
-				    	// 	}
-				    	// }
+				    	for(int m = 0; m < max_number_of_users; m++) {
+				    		if (username[m] == chattingFriend[i]) {
+				    			if(chattingFriend[m] == username[i]) {
+				    				send(sockets[m], data.c_str(), data.size(), MSG_NOSIGNAL);
+				    			}
+				    			break;
+				    		}
+				    	}
 					}
 
 					//Format: "FileName{number} {file name}"
@@ -272,18 +274,18 @@ int main(int argc, char const *argv[]) {
 						file.write(("BFile: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
 						file.close();
 
-						// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-						// strcat(httpResponse, "File finish");
-				  //   	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						strcat(httpResponse, "File finish");
+				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 
-				    	// for(int m = 0; m < max_number_of_users; m++) {
-				    	// 	if (username[m] == chattingFriend[i]) {
-				    	// 		if(chattingFriend[m] == username[i]) {
-				    	// 			send(sockets[m], ("Filename " + filename[i]).c_str(), ("Filename " + filename[i]).size(), MSG_NOSIGNAL);
-				    	// 		}
-				    	// 		break;
-				    	// 	}
-				    	// }
+				    	for(int m = 0; m < max_number_of_users; m++) {
+				    		if (username[m] == chattingFriend[i]) {
+				    			if(chattingFriend[m] == username[i]) {
+				    				send(sockets[m], ("Filename " + filename[i]).c_str(), ("Filename " + filename[i]).size(), MSG_NOSIGNAL);
+				    			}
+				    			break;
+				    		}
+				    	}
 					}
 
 					//Format: "Download{number} {filename}"
@@ -296,6 +298,9 @@ int main(int argc, char const *argv[]) {
 					//client should detect the last download
 					//Format: "DownloadImme{number}"
 					else if(data.substr(0, 12) == "DownloadImme") {
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						file.open(root/username[i]/chattingFriend[i]/filename[i], ios::in|ios::binary);
+						file.seekg(base[i], ios::end);
 						index = stoi(data.substr(12));
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
 						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
