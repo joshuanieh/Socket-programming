@@ -272,45 +272,43 @@ function App() {
                           <h1>Chat room</h1>
                         </div>
                         <div>
-                      {friends.map((e, i) => (
-                        <p className="App-message" key={i}>
-                          <Button type="ghost" onClick={() => {
-                            const da = `Chat ${e} ${id}`
-                            const option = {
-                              hostname: '127.0.0.1',
-                              port: 4000,
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'text/plain',
-                                'Content-Length': da.length
-                              }
-                            }
-    
-                            const req = http.request(option, res => {
-                              console.log(`statusCode: ${res.statusCode}`)
-    
-                              res.on('data', d => {
-                                console.log(d)
-                                  
-                              })
-      
-                              req.on('error', error => {
-                                console.error(error)
-                              })
-      
-                              req.write(da)
-                              req.end()
-                              setChatting(true)
-                              setChatRoom(false)
-                          }}}>{e}</Button>
-                        </p>
-                      ))}
-                    </div>
+                          {friends.map((e, i) => (
+                            <p className="App-message" key={i}>
+                              <Button type="ghost" onClick={() => {
+                                const da = `Chat ${e} ${id}`
+                                const option = {
+                                  hostname: '127.0.0.1',
+                                  port: 4000,
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'text/plain',
+                                    'Content-Length': da.length
+                                  }
+                                }
+        
+                                const req = http.request(option, res => {
+                                  console.log(`statusCode: ${res.statusCode}`)
+        
+                                  res.on('data', d => {
+                                    console.log(d)
+                                  })
+                                })
+          
+                                req.on('error', error => {
+                                  console.error(error)
+                                })
+        
+                                req.write(da)
+                                req.end()
+                                setChatting(true)
+                                setChatRoom(false)
+                              }}>{e}</Button>
+                            </p>
+                          ))}
+                        </div>
                         <Button type="primary" danger onClick={() => {
                           setChatRoom(false)
-                        }}>
-                          Leave
-                        </Button>
+                        }}>Leave</Button>
                       </>
                       :
                       <>
