@@ -394,7 +394,7 @@ function App() {
                                   req.write(da)
 
                                   req.end()
-                                  msg = "X: " + msg
+                                  msg = "A: " + msg
                                   setMessagesList([...messagesList, msg])
                                 }
                                 setMessages('')
