@@ -156,6 +156,31 @@ function App() {
                   onSearch={(msg) => {
                     if(msg) {
                         ////////////////////// sendMessage(`Add {username}`)
+                        const da = `Add ${msg} ${id}`
+                        const option = {
+                          hostname: '127.0.0.1',
+                          port: 4000,
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'text/plain',
+                            'Content-Length': da.length
+                          }
+                        }
+
+                        const req = http.request(option, res => {
+                          console.log(`statusCode: ${res.statusCode}`)
+
+                          res.on('data', d => {
+                            console.log(d)
+                          })
+                        })
+
+                        req.on('error', error => {
+                          console.error(error)
+                        })
+
+                        req.write(da)
+                        req.end()
                     }
                     else {
                       displayStatus({
@@ -273,33 +298,6 @@ function App() {
                           List all friends
                         </Button>
                         <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          const da = "HAHA"
-                          const option = {
-                            hostname: '127.0.0.1',
-                            port: 4000,
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'text/plain',
-                              'Content-Length': da.length
-                            }
-                          }
-
-                          const req = http.request(option, res => {
-                            console.log(`statusCode: ${res.statusCode}`)
-
-                            res.on('data', d => {
-                              process.stdout.write(d)
-                            })
-                          })
-
-                          req.on('error', error => {
-                            console.error(error)
-                          })
-
-                          req.write(id)
-                          req.write()
-                          req.end()
-                          /////////////////////////////
                           setAddFriend(true)
                         }}>
                           Add friends
