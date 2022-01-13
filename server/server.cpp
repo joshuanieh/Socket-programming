@@ -213,7 +213,7 @@ int main(int argc, char const *argv[]) {
         				chattingFriend[index] = name;
 
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
 						chatBase[index] = buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
 						file.read(buff, buff_len - strlen(httpResponse));

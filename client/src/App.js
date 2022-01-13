@@ -300,7 +300,10 @@ function App() {
                                     }
                                     messageString = messageString.slice(0,-1)
                                     console.log(messageString)
-                                    setMessagesList(messageString.split('\n'))
+
+                                    const copy = messageString.split('\n')
+                                    copy.splice(0, 1)
+                                    setMessagesList(copy)
                                   })
                                 })
           
@@ -330,17 +333,13 @@ function App() {
                               <h1>{chattingFriend}</h1>
                             </div>
                             <div className="App-messages">
-                              {messagesList.length === 0 ? (
-                                <p style={{ color: '#ccc' }}>
-                                  {opened? 'No messages...' : 'Loading...'}
-                                </p>
-                              ) : (
+                              {
                                 messagesList.map((e, i) => (
-                                  <p className="App-message" key={i}>
-                                    <Tag color="blue">{e}</Tag> {body}
-                                  </p>
+                                    <p className="App-message" key={i}>
+                                      <Tag color="blue">{e}</Tag> {body}
+                                    </p>
                                 ))
-                              )}
+                              }
                             </div>
                             <Input.Search
                               rows={4}
@@ -382,7 +381,9 @@ function App() {
                                   })
           
                                   req.write(da)
+
                                   req.end()
+                                  setMessagesList([...messagesList, msg])
                                 }
                                 setMessages('')
                               }}
@@ -485,7 +486,38 @@ function App() {
                               Remove friends
                             </Button>
                             <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                              //////////////sendMessage('List friends')
+                              const da = "List friends"
+                              const option = {
+                                hostname: '127.0.0.1',
+                                port: 4000,
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'text/plain',
+                                  'Content-Length': da.length,
+                                }
+                              }
+
+                              const req = http.request(option, res => {
+                                console.log(`statusCode: ${res.statusCode}`)
+
+                                res.on('data', d => {
+                                  console.log(d)
+                                  friendString = ""
+                                  for(var i=0; i<d.length; i++){
+                                    friendString += String.fromCharCode(d[i])
+                                  }
+                                  friendString = friendString.slice(0,-1)
+                                  console.log(friendString)
+                                  setFriends(friendString.split('\n'))
+                                })
+                              })
+
+                              req.on('error', error => {
+                                console.error(error)
+                              })
+
+                              req.write(`List friends ${id}`)
+                              req.end()
                               setChatRoom(true)
                             }}>
                               Chat with
