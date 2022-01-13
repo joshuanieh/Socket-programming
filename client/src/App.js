@@ -25,12 +25,14 @@ function App() {
   const [id, setID] = useState(0)
   const [status, setStatus] = useState({})
   const [messages, setMessages] = useState("")
+  const [messagesList, setMessagesList] = useState([])
   const [friends, setFriends] = useState([])
   const [textFinish, setTextFinish] = useState("")
   const [username, setUsername] = useState('')
   const [options, setOptions] = useState(false)
   const [chatRoom, setChatRoom] = useState(false)
   const [chatting, setChatting] = useState(false)
+  const [chattingFriend, setChattingFriend] = useState("")
   const [addFriend, setAddFriend] = useState(false)
   const [removeFriend, setRemoveFriend] = useState(false)
   const [listFriends, setListFriends] = useState(false)
@@ -39,6 +41,7 @@ function App() {
   const bodyRef = useRef(null)
 
   let friendString = ""
+  let messageString = ""
 
   const displayStatus = (s) => {
     if (s.msg) {
@@ -291,6 +294,13 @@ function App() {
         
                                   res.on('data', d => {
                                     console.log(d)
+                                    messageString = ""
+                                    for(var i=0; i<d.length; i++){
+                                      messageString += String.fromCharCode(d[i])
+                                    }
+                                    messageString = messageString.slice(0,-1)
+                                    console.log(messageString)
+                                    setMessagesList(messageString.split('\n'))
                                   })
                                 })
           
@@ -300,114 +310,188 @@ function App() {
         
                                 req.write(da)
                                 req.end()
+                                setChattingFriend(e)
                                 setChatting(true)
                                 setChatRoom(false)
                               }}>{e}</Button>
                             </p>
                           ))}
                         </div>
+
                         <Button type="primary" danger onClick={() => {
                           setChatRoom(false)
                         }}>Leave</Button>
                       </>
                       :
                       <>
-                        <div className="App-title">
-                          <h1>Options</h1>
-                        </div>
-                        <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          /////////////////////sendMessage('List friends')
-                          // http.onload = () => console.log(http.responseText)
-                          // http.send('List friends')
-                          //////////////////////////
-                          // const da = JSON.stringify({
-                          //   todo: 'Buy the milk'
-                          // })
-                          const da = "List friends"
-                          const option = {
-                            hostname: '127.0.0.1',
-                            port: 4000,
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'text/plain',
-                              'Content-Length': da.length,
-                            }
-                          }
-
-                          const req = http.request(option, res => {
-                            console.log(`statusCode: ${res.statusCode}`)
-
-                            res.on('data', d => {
-                              console.log(d)
-                              friendString = ""
-                              for(var i=0; i<d.length; i++){
-                                friendString += String.fromCharCode(d[i])
+                        {chatting ? 
+                          <>
+                            <div className="App-title">
+                              <h1>{chattingFriend}</h1>
+                            </div>
+                            <div className="App-messages">
+                              {messagesList.length === 0 ? (
+                                <p style={{ color: '#ccc' }}>
+                                  {opened? 'No messages...' : 'Loading...'}
+                                </p>
+                              ) : (
+                                messagesList.map((e, i) => (
+                                  <p className="App-message" key={i}>
+                                    <Tag color="blue">{e}</Tag> {body}
+                                  </p>
+                                ))
+                              )}
+                            </div>
+                            <Input.Search
+                              rows={4}
+                              value={body}
+                              ref={bodyRef}
+                              enterButton="Send"
+                              onChange={(e) => setMessages(e.target.value)}
+                              placeholder="Type a message here..."
+                              onSearch={(msg) => {
+                                if (!msg) {
+                                  displayStatus({
+                                    type: 'error',
+                                    msg: 'Please enter a message.'
+                                  })
+                                  return
+                                }
+                                else {
+                                  const da = `Text${id} ${msg}`
+                                  const option = {
+                                    hostname: '127.0.0.1',
+                                    port: 4000,
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'text/plain',
+                                      'Content-Length': da.length
+                                    }
+                                  }
+          
+                                  const req = http.request(option, res => {
+                                    console.log(`statusCode: ${res.statusCode}`)
+          
+                                    res.on('data', d => {
+                                      console.log(d)
+                                    })
+                                  })
+            
+                                  req.on('error', error => {
+                                    console.error(error)
+                                  })
+          
+                                  req.write(da)
+                                  req.end()
+                                }
+                                setMessages('')
+                              }}
+                            ></Input.Search>
+                            <Button type="primary" danger onClick={() => {
+                              setChatting(false)
+                              setChatRoom(true)
+                            }}>Leave</Button>
+                          </>
+                          :
+                          <>
+                            <div className="App-title">
+                              <h1>Options</h1>
+                            </div>
+                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              /////////////////////sendMessage('List friends')
+                              // http.onload = () => console.log(http.responseText)
+                              // http.send('List friends')
+                              //////////////////////////
+                              // const da = JSON.stringify({
+                              //   todo: 'Buy the milk'
+                              // })
+                              const da = "List friends"
+                              const option = {
+                                hostname: '127.0.0.1',
+                                port: 4000,
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'text/plain',
+                                  'Content-Length': da.length,
+                                }
                               }
-                              friendString = friendString.slice(0,-1)
-                              console.log(friendString)
-                              setFriends(friendString.split('\n'))
-                            })
-                          })
 
-                          req.on('error', error => {
-                            console.error(error)
-                          })
+                              const req = http.request(option, res => {
+                                console.log(`statusCode: ${res.statusCode}`)
 
-                          req.write(`List friends ${id}`)
-                          req.end()
-                          /////////////////////////////
-                          setListFriends(true)
-                        }}>
-                          List all friends
-                        </Button>
-                        <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          setAddFriend(true)
-                        }}>
-                          Add friends
-                        </Button>
-                        <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          const da = "List friends"
-                          const option = {
-                            hostname: '127.0.0.1',
-                            port: 4000,
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'text/plain',
-                              'Content-Length': da.length,
-                            }
-                          }
+                                res.on('data', d => {
+                                  console.log(d)
+                                  friendString = ""
+                                  for(var i=0; i<d.length; i++){
+                                    friendString += String.fromCharCode(d[i])
+                                  }
+                                  friendString = friendString.slice(0,-1)
+                                  console.log(friendString)
+                                  setFriends(friendString.split('\n'))
+                                })
+                              })
 
-                          const req = http.request(option, res => {
-                            console.log(`statusCode: ${res.statusCode}`)
+                              req.on('error', error => {
+                                console.error(error)
+                              })
 
-                            res.on('data', d => {
-                              console.log(d)
-                              friendString = ""
-                              for(var i=0; i<d.length; i++){
-                                friendString += String.fromCharCode(d[i])
+                              req.write(`List friends ${id}`)
+                              req.end()
+                              /////////////////////////////
+                              setListFriends(true)
+                            }}>
+                              List all friends
+                            </Button>
+                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              setAddFriend(true)
+                            }}>
+                              Add friends
+                            </Button>
+                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              const da = "List friends"
+                              const option = {
+                                hostname: '127.0.0.1',
+                                port: 4000,
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'text/plain',
+                                  'Content-Length': da.length,
+                                }
                               }
-                              friendString = friendString.slice(0,-1)
-                              console.log(friendString)
-                              setFriends(friendString.split('\n'))
-                            })
-                          })
 
-                          req.on('error', error => {
-                            console.error(error)
-                          })
+                              const req = http.request(option, res => {
+                                console.log(`statusCode: ${res.statusCode}`)
 
-                          req.write(`List friends ${id}`)
-                          req.end()
-                          setRemoveFriend(true)
-                        }}>
-                          Remove friends
-                        </Button>
-                        <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          //////////////sendMessage('List friends')
-                          setChatRoom(true)
-                        }}>
-                          Chat with
-                        </Button>
+                                res.on('data', d => {
+                                  console.log(d)
+                                  friendString = ""
+                                  for(var i=0; i<d.length; i++){
+                                    friendString += String.fromCharCode(d[i])
+                                  }
+                                  friendString = friendString.slice(0,-1)
+                                  console.log(friendString)
+                                  setFriends(friendString.split('\n'))
+                                })
+                              })
+
+                              req.on('error', error => {
+                                console.error(error)
+                              })
+
+                              req.write(`List friends ${id}`)
+                              req.end()
+                              setRemoveFriend(true)
+                            }}>
+                              Remove friends
+                            </Button>
+                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              //////////////sendMessage('List friends')
+                              setChatRoom(true)
+                            }}>
+                              Chat with
+                            </Button>
+                          </>
+                        }
                       </>
                     }
                   </>
@@ -420,61 +504,6 @@ function App() {
       }
     </div>
   )
-
-//   return (
-//     <div className="App">
-      // <div className="App-title">
-      //   <h1>Simple Chat</h1>
-      //   <Button type="primary" danger onClick={clearMessages}>
-      //     Clear
-      //   </Button>
-      // </div>
-      // <div className="App-messages">
-      //   {messages.length === 0 ? (
-      //     <p style={{ color: '#ccc' }}>
-      //       {opened? 'No messages...' : 'Loading...'}
-      //     </p>
-      //   ) : (
-      //     messages.map(({ name, body }, i) => (
-      //       <p className="App-message" key={i}>
-      //         <Tag color="blue">{name}</Tag> {body}
-      //       </p>
-      //     ))
-      //   )}
-      // </div>
-//       <Input
-//         placeholder="Username"
-//         value={username}
-//         onChange={(e) => setUsername(e.target.value)}
-//         style={{ marginBottom: 10 }}
-//         onKeyDown={(e) => {
-//           if (e.key === 'Enter') {
-//             bodyRef.current.focus()
-//           }
-//         }}
-//       ></Input>
-//       <Input.Search
-//         rows={4}
-//         value={body}
-//         ref={bodyRef}
-//         enterButton="Send"
-//         onChange={(e) => setBody(e.target.value)}
-//         placeholder="Type a message here..."
-//         onSearch={(msg) => {
-//           if (!msg || !username) {
-//             displayStatus({
-//               type: 'error',
-//               msg: 'Please enter a username and a message body.'
-//             })
-//             return
-//           }
-
-//           sendMessage({ name: username, body: msg })
-//           setBody('')
-//         }}
-//       ></Input.Search>
-//     </div>
-//   )
 }
 
 export default App
