@@ -23,6 +23,7 @@ function App() {
   //     data: 'lll'
   // }).end();
   const [id, setID] = useState(0)
+  const [status, setStatus] = useState({})
   const [messages, setMessages] = useState("")
   const [friends, setFriends] = useState([])
   const [textFinish, setTextFinish] = useState("")
@@ -172,6 +173,18 @@ function App() {
 
                           res.on('data', d => {
                             console.log(d)
+                            if(d[0] === 49){
+                              displayStatus({
+                                type: 'error',
+                                msg: 'No user found.'
+                              })
+                            }
+                            else if(d[0] === 48){
+                              displayStatus({
+                                type: 'success',
+                                msg: 'Add user successfully'
+                              })
+                            }
                           })
                         })
 
@@ -203,24 +216,45 @@ function App() {
                     <div className="App-title">
                       <h1>Remove friends</h1>
                     </div>
-                    <Input.Search
-                      placeholder="Please enter a username:"
-                      enterButton="Remove"
-                      ref={bodyRef}
-                      style={{ marginBottom: 10 }}
-                      onChange={(e) => setUsername(e.target.value)}
-                      onSearch={(msg) => {
-                        if(msg) {
-                            //////////////////sendMessage(`Remove {username}`)
-                        }
-                        else {
-                          displayStatus({
-                            type: 'error',
-                            msg: 'Please enter a username.'
-                          })
-                        }
-                      }}>
-                    </Input.Search>
+                    <div>
+                      {friends.map((e, i) => (
+                        <p className="App-message" key={i}>
+                          <Button type="ghost" onClick={() => {
+                            const da = `Remove ${msg} ${id}`
+                            const option = {
+                              hostname: '127.0.0.1',
+                              port: 4000,
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'text/plain',
+                                'Content-Length': da.length
+                              }
+                            }
+    
+                            const req = http.request(option, res => {
+                              console.log(`statusCode: ${res.statusCode}`)
+    
+                              res.on('data', d => {
+                                console.log(d)
+                                displayStatus({
+                                  type: 'success',
+                                  msg: 'Remove friend successfully.'
+                                })
+                                const index = array.indexOf(e);
+                                setFriends([...friends].splice(index, 1))
+                              })
+                            })
+    
+                            req.on('error', error => {
+                              console.error(error)
+                            })
+    
+                            req.write(da)
+                            req.end()
+                          }}>{e}</Button>
+                        </p>
+                      ))}
+                    </div>
                     <Button type="primary" danger onClick={() => {
                       setRemoveFriend(false)
                     }}>
@@ -303,7 +337,38 @@ function App() {
                           Add friends
                         </Button>
                         <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                          // sendMessage(`List friends`)
+                          const da = "List friends"
+                          const option = {
+                            hostname: '127.0.0.1',
+                            port: 4000,
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'text/plain',
+                              'Content-Length': da.length,
+                            }
+                          }
+
+                          const req = http.request(option, res => {
+                            console.log(`statusCode: ${res.statusCode}`)
+
+                            res.on('data', d => {
+                              console.log(d)
+                              friendString = ""
+                              for(var i=0; i<d.length; i++){
+                                friendString += String.fromCharCode(d[i])
+                              }
+                              friendString = friendString.slice(0,-1)
+                              console.log(friendString)
+                              setFriends(friendString.split('\n'))
+                            })
+                          })
+
+                          req.on('error', error => {
+                            console.error(error)
+                          })
+
+                          req.write(`List friends ${id}`)
+                          req.end()
                           setRemoveFriend(true)
                         }}>
                           Remove friends

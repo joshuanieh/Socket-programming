@@ -97,20 +97,29 @@ int main(int argc, char const *argv[]) {
 					if(data.substr(0, 5) == "Login") {
 						name = data.substr(6);
 						int k;
-						for(k; k < allUsername.size(); i++) {
+						cout << name << endl;
+						for(k = 0; k < allUsername.size(); k++) {
+							cout << "1" << endl;
 							if(allUsername[k] == name) {
+								cout << "2" << endl;
 				    			flag = true;
 							    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 				    			sprintf(httpResponse, "%s%d", httpResponse, k);
 								cout << httpResponse << endl;
 							    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+								close(sockets[i]);
+								sockets[i] = 0;
 				    			break;
 							}
 						}
 						if(flag) continue;
+						cout << "3" << endl;
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 		    			sprintf(httpResponse, "%s%d", httpResponse, k);
 					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						close(sockets[i]);
+						sockets[i] = 0;
+						cout << httpResponse << endl;
 		    			allUsername.push_back(name);
 						filesystem::create_directory(root/name);
 					}
@@ -120,7 +129,10 @@ int main(int argc, char const *argv[]) {
         			else if(data.substr(0, 12) == "List friends") {
         				index = stoi(data.substr(13));
 
-    					for (const auto &n : filesystem::directory_iterator{root/allUsername[index]}) filelist.push_back(n.path().stem().string());
+    					for (const auto &n : filesystem::directory_iterator{root/allUsername[index]}) {
+							if(is_directory(n))
+								filelist.push_back(n.path().stem().string());
+						}
 					    sort(filelist.begin(), filelist.end());
 					    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 					    for (const string &friendName : filelist) {
@@ -131,10 +143,12 @@ int main(int argc, char const *argv[]) {
 					    filelist.clear();
 						cout << httpResponse << endl;
 					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						close(sockets[i]);
+						sockets[i] = 0;
 					}
 
 					//Format: "Add {username} {number}"
-					//(removed)Return: "Add successfully" | "Add fail"
+					//Return: "Add successfully" | "Add fail"
 					else if(data.substr(0, 3) == "Add") {
 						int sep = data.find(" ", 4);
 						name = data.substr(4, sep - 4);
@@ -150,17 +164,23 @@ int main(int argc, char const *argv[]) {
 			                	file.close();
 								filesystem::create_directory(root/name/allUsername[index]);
 
-					    		// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-					    		// strcat(httpResponse, "Add successfully");
-							    // send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-				    			// flag = true;
+					    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+					    		strcat(httpResponse, "0");
+							    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+								cout << httpResponse << endl;
+								close(sockets[i]);
+								sockets[i] = 0;
+				    			flag = true;
 				    			break;
 							}
 						}
-						// if(flag) continue;
-						// strcpy(httpResponse, "HTTP/1.1 200 OK\r\n\r\n");
-			   //  		strcat(httpResponse, "Add fail");
-					 //    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						if(flag) continue;
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+			    		strcat(httpResponse, "1");
+					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						cout << httpResponse << endl;
+						close(sockets[i]);
+						sockets[i] = 0;
 					}
 
 					//Format: "Remove {username} {number}"
