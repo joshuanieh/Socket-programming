@@ -43,6 +43,12 @@ function App() {
   let friendString = ""
   let messageString = ""
 
+  useEffect(() => {
+    if(chatting){
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight
+    }
+  })
+
   const displayStatus = (s) => {
     if (s.msg) {
       const { type, msg } = s
@@ -80,7 +86,7 @@ function App() {
           <Input.Search
             placeholder="Please enter a username:"
             enterButton="Continue"
-            ref={bodyRef}
+            // ref={bodyRef}
             style={{ marginBottom: 10 }}
             onChange={(e) => setUsername(e.target.value)}
             onSearch={(msg) => {
@@ -155,7 +161,7 @@ function App() {
                 <Input.Search
                   placeholder="Please enter a username:"
                   enterButton="Add"
-                  ref={bodyRef}
+                  // ref={bodyRef}
                   style={{ marginBottom: 10 }}
                   onChange={(e) => setUsername(e.target.value)}
                   onSearch={(msg) => {
@@ -333,15 +339,15 @@ function App() {
                             <div className="App-title">
                               <h1>{chattingFriend}</h1>
                             </div>
-                            <div className="App-messages">
+                            <div className="App-messages" ref={bodyRef}>
                               {messagesList.map((e, i) => (
                                 e[0] === 'A' ? (
                                   <p key={i} align="right">
-                                    <Tag  color="blue">{e.slice(3, -1)}</Tag>
+                                    <Tag  color="blue">{e.slice(3)}</Tag>
                                   </p> 
                                 ) : (
                                   <p key={i} align="left">
-                                    <Tag color="green">{e.slice(3, -1)}</Tag>
+                                    <Tag color="green">{e.slice(3)}</Tag>
                                   </p>
                                 )
                               ))}
@@ -388,6 +394,7 @@ function App() {
                                   req.write(da)
 
                                   req.end()
+                                  msg = "X: " + msg
                                   setMessagesList([...messagesList, msg])
                                 }
                                 setMessages('')
