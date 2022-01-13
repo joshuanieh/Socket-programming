@@ -303,6 +303,7 @@ function App() {
 
                                     const copy = messageString.split('\n')
                                     copy.splice(0, 1)
+                                    console.log(copy)
                                     setMessagesList(copy)
                                   })
                                 })
@@ -333,11 +334,10 @@ function App() {
                               <h1>{chattingFriend}</h1>
                             </div>
                             <div className="App-messages">
-                              {
-                                messagesList.map((e, i) => (
-                                    <p className="App-message" key={i}>
-                                      <Tag color="blue">{e}</Tag> {body}
-                                    </p>
+                              {messagesList.map((e, i) => (
+                                  <p className="App-message" key={i}>
+                                    <Tag color="blue">{e}</Tag> {body}
+                                  </p>
                                 ))
                               }
                             </div>

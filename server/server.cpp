@@ -17,18 +17,19 @@
 #define socket_protocol 0
 #define buff_len 1024
 #define max_number_of_users 10
+#define max_number_of_users_in_database INT16_MAX
 using namespace std;
 
 int main(int argc, char const *argv[]) {
 	string httpRequest, fileroot = "./public", name;
 	const filesystem::path root{fileroot};
-	vector<string> filelist, allUsername, chattingFriend, filename;
+	vector<string> filelist, allUsername, chattingFriend(max_number_of_users_in_database), filename(max_number_of_users_in_database);
 	for (const auto &n : filesystem::directory_iterator{root}) {
 		if (n.is_directory())
             allUsername.push_back(n.path().stem().string());
 	}
 	streampos begin, end;
-	vector<streampos> base, chatBase;
+	vector<streampos> base(max_number_of_users_in_database), chatBase(max_number_of_users_in_database);
 	bool flag;
 	int o = true, j, index;
 	fstream file;
@@ -209,16 +210,25 @@ int main(int argc, char const *argv[]) {
 					else if(data.substr(0, 4) == "Chat") {
 						int sep = data.find(" ", 5);
 						name = data.substr(5, sep - 5);
+						// cout << name << endl;
         				index = stoi(data.substr(sep + 1));
+						// cout << index << endl;
         				chattingFriend[index] = name;
+						// cout << chattingFriend[index] << endl;
 
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
+						// cout << "-1" << endl;
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
+						// cout << "0" << endl;
 						chatBase[index] = buff_len - strlen(httpResponse);
+						// cout << "1" << endl;
 						file.seekg(chatBase[index], ios::end);
+						// cout << "2" << endl;
 						file.read(buff, buff_len - strlen(httpResponse));
+						cout << "3" << endl;
 						file.close();
 						strcat(httpResponse, buff);
+						cout << httpResponse << endl;
 				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 					}
 
