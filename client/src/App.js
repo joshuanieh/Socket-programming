@@ -335,11 +335,16 @@ function App() {
                             </div>
                             <div className="App-messages">
                               {messagesList.map((e, i) => (
-                                  <p key={i}>
-                                    <Tag color="blue">{e}</Tag>
+                                e[0] === 'A' ? (
+                                  <p key={i} align="right">
+                                    <Tag  color="blue">{e.slice(3, -1)}</Tag>
+                                  </p> 
+                                ) : (
+                                  <p key={i} align="left">
+                                    <Tag color="green">{e.slice(3, -1)}</Tag>
                                   </p>
-                                ))
-                              }
+                                )
+                              ))}
                             </div>
                             <Input.Search
                               // rows={4}
