@@ -219,7 +219,7 @@ function App() {
                     <div>
                       {friends.map((e, i) => (
                         <p className="App-message" key={i}>
-                          <Button type="ghost" onClick={() => {
+                          <Button type="ghost" onClick={(msg) => {
                             const da = `Remove ${msg} ${id}`
                             const option = {
                               hostname: '127.0.0.1',
@@ -240,7 +240,7 @@ function App() {
                                   type: 'success',
                                   msg: 'Remove friend successfully.'
                                 })
-                                const index = array.indexOf(e);
+                                const index = friends.indexOf(e);
                                 setFriends([...friends].splice(index, 1))
                               })
                             })
