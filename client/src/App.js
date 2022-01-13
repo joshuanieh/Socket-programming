@@ -30,6 +30,7 @@ function App() {
   const [username, setUsername] = useState('')
   const [options, setOptions] = useState(false)
   const [chatRoom, setChatRoom] = useState(false)
+  const [chatting, setChatting] = useState(false)
   const [addFriend, setAddFriend] = useState(false)
   const [removeFriend, setRemoveFriend] = useState(false)
   const [listFriends, setListFriends] = useState(false)
@@ -219,8 +220,8 @@ function App() {
                     <div>
                       {friends.map((e, i) => (
                         <p className="App-message" key={i}>
-                          <Button type="ghost" onClick={(msg) => {
-                            const da = `Remove ${msg} ${id}`
+                          <Button type="ghost" onClick={() => {
+                            const da = `Remove ${e} ${id}`
                             const option = {
                               hostname: '127.0.0.1',
                               port: 4000,
@@ -241,7 +242,9 @@ function App() {
                                   msg: 'Remove friend successfully.'
                                 })
                                 const index = friends.indexOf(e);
-                                setFriends([...friends].splice(index, 1))
+                                const copy = [...friends]
+                                copy.splice(index, 1)
+                                setFriends(copy)
                               })
                             })
     
@@ -269,12 +272,40 @@ function App() {
                           <h1>Chat room</h1>
                         </div>
                         <div>
-                          {friends.map((e,i) => (
-                            <p className="App-message" key={i}>
-                              <Tag color="blue">{e}</Tag>
-                            </p>
-                          ))}
-                        </div>
+                      {friends.map((e, i) => (
+                        <p className="App-message" key={i}>
+                          <Button type="ghost" onClick={() => {
+                            const da = `Chat ${e} ${id}`
+                            const option = {
+                              hostname: '127.0.0.1',
+                              port: 4000,
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'text/plain',
+                                'Content-Length': da.length
+                              }
+                            }
+    
+                            const req = http.request(option, res => {
+                              console.log(`statusCode: ${res.statusCode}`)
+    
+                              res.on('data', d => {
+                                console.log(d)
+                                  
+                              })
+      
+                              req.on('error', error => {
+                                console.error(error)
+                              })
+      
+                              req.write(da)
+                              req.end()
+                              setChatting(true)
+                              setChatRoom(false)
+                          }}}>{e}</Button>
+                        </p>
+                      ))}
+                    </div>
                         <Button type="primary" danger onClick={() => {
                           setChatRoom(false)
                         }}>
