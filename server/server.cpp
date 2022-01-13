@@ -210,22 +210,16 @@ int main(int argc, char const *argv[]) {
 					else if(data.substr(0, 4) == "Chat") {
 						int sep = data.find(" ", 5);
 						name = data.substr(5, sep - 5);
-						// cout << name << endl;
         				index = stoi(data.substr(sep + 1));
-						// cout << index << endl;
         				chattingFriend[index] = name;
-						// cout << chattingFriend[index] << endl;
 
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						// cout << "-1" << endl;
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
-						// cout << "0" << endl;
-						chatBase[index] = buff_len - strlen(httpResponse);
-						// cout << "1" << endl;
+						file.seekg (0, ios::end);
+					    int length = file.tellg();
+					    chatBase[index] = buff_len - strlen(httpResponse) > length ? length : buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
-						// cout << "2" << endl;
-						file.read(buff, buff_len - strlen(httpResponse));
-						cout << "3" << endl;
+						file.read(buff, chatBase[index]);
 						file.close();
 						strcat(httpResponse, buff);
 						cout << httpResponse << endl;
