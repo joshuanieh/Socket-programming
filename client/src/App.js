@@ -335,16 +335,16 @@ function App() {
                             </div>
                             <div className="App-messages">
                               {messagesList.map((e, i) => (
-                                  <p className="App-message" key={i}>
-                                    <Tag color="blue">{e}</Tag> {body}
+                                  <p key={i}>
+                                    <Tag color="blue">{e}</Tag>
                                   </p>
                                 ))
                               }
                             </div>
                             <Input.Search
-                              rows={4}
-                              value={body}
-                              ref={bodyRef}
+                              // rows={4}
+                              value={messages}
+                              // ref={bodyRef}
                               enterButton="Send"
                               onChange={(e) => setMessages(e.target.value)}
                               placeholder="Type a message here..."
