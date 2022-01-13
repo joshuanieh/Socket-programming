@@ -205,6 +205,7 @@ int main(int argc, char const *argv[]) {
 					}
 
 					//Format: "Chat {username} {number}"
+					//Return: Chat history
 					else if(data.substr(0, 4) == "Chat") {
 						int sep = data.find(" ", 5);
 						name = data.substr(5, sep - 5);
@@ -235,6 +236,7 @@ int main(int argc, char const *argv[]) {
 					}
 
 					//Format: "Text{number} {plain text}"
+					//Return: "0"
 					else if(data.substr(0, 4) == "Text") {
 						index = stoi(data.substr(4, data.find("") - 4));
 						data = data.substr(data.find(" ") + 1);
@@ -247,9 +249,9 @@ int main(int argc, char const *argv[]) {
 						file.write(("B: " + data + "\n").c_str(), data.size() + 4);
 						file.close();
 
-						// strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						// strcat(httpResponse, "Text finish");
-				  //   	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						strcat(httpResponse, "0");
+				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 
 				  //   	for(int m = 0; m < max_number_of_users; m++) {
 				  //   		if (username[m] == chattingFriend[i]) {
