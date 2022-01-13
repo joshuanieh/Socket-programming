@@ -2,7 +2,8 @@ import './App.css'
 
 import React, { useEffect, useRef, useState } from 'react'
 // import useChat from './useChat'
-import { Button, Input, message, Tag } from 'antd'
+import { Upload, Button, Input, message, Tag } from 'antd'
+import { UploadOutlined } from '@ant-design/icons'
 
 function App() {
   // const { status, opened, messages, sendMessage, clearMessages } = useChat()
@@ -39,6 +40,26 @@ function App() {
   const [body, setBody] = useState('')
 
   const bodyRef = useRef(null)
+
+  const MAX_SIZE_OF_MESSAGE = 3096;
+
+  const props = {
+    name: 'file',
+    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    headers: {
+      authorization: 'authorization-text',
+    }
+    // onChange(info) {
+    //   if (info.file.status !== 'uploading') {
+    //     console.log(info.file, info.fileList);
+    //   }
+    //   if (info.file.status === 'done') {
+    //     message.success(`${info.file.name} file uploaded successfully`);
+    //   } else if (info.file.status === 'error') {
+    //     message.error(`${info.file.name} file upload failed.`);
+    //   }
+    // }
+  }
 
   let friendString = ""
   let messageString = ""
@@ -102,17 +123,15 @@ function App() {
                       'Content-Length': da.length,
                     }
                   }
-
                   const req = http.request(option, res => {
-                    console.log(res)
-                    console.log(`statusCode: ${res.statusCode}`)
-
+                    // console.log(res)
+                    // console.log(`statusCode: ${res.statusCode}`)
                     res.on('data', d => {
-                      console.log(d)
+                      // console.log(d)
                       setID(d);
                     })
                   })
-                  console.log(req)
+                  // console.log(req)
 
                   req.on('error', error => {
                     console.error(error)
@@ -179,10 +198,9 @@ function App() {
                         }
 
                         const req = http.request(option, res => {
-                          console.log(`statusCode: ${res.statusCode}`)
-
+                          // console.log(`statusCode: ${res.statusCode}`)
                           res.on('data', d => {
-                            console.log(d)
+                            // console.log(d)
                             if(d[0] === 49){
                               displayStatus({
                                 type: 'error',
@@ -242,10 +260,9 @@ function App() {
                             }
     
                             const req = http.request(option, res => {
-                              console.log(`statusCode: ${res.statusCode}`)
-    
+                              // console.log(`statusCode: ${res.statusCode}`)
                               res.on('data', d => {
-                                console.log(d)
+                                // console.log(d)
                                 displayStatus({
                                   type: 'success',
                                   msg: 'Remove friend successfully.'
@@ -296,20 +313,18 @@ function App() {
                                 }
         
                                 const req = http.request(option, res => {
-                                  console.log(`statusCode: ${res.statusCode}`)
-        
+                                  // console.log(`statusCode: ${res.statusCode}`)
                                   res.on('data', d => {
-                                    console.log(d)
+                                    // console.log(d)
                                     messageString = ""
                                     for(var i=0; i<d.length; i++){
                                       messageString += String.fromCharCode(d[i])
                                     }
                                     messageString = messageString.slice(0,-1)
-                                    console.log(messageString)
-
+                                    // console.log(messageString)
                                     const copy = messageString.split('\n')
                                     copy.splice(0, 1)
-                                    console.log(copy)
+                                    // console.log(copy)
                                     setMessagesList(copy)
                                   })
                                 })
@@ -380,10 +395,9 @@ function App() {
                                   }
           
                                   const req = http.request(option, res => {
-                                    console.log(`statusCode: ${res.statusCode}`)
-          
+                                    // console.log(`statusCode: ${res.statusCode}`)
                                     res.on('data', d => {
-                                      console.log(d)
+                                      // console.log(d)
                                     })
                                   })
             
@@ -400,6 +414,102 @@ function App() {
                                 setMessages('')
                               }}
                             ></Input.Search>
+                            <br/>
+                            <Upload {...props} showUploadList={false} beforeUpload={(file) => {
+                              const reader = new FileReader();
+
+                              reader.onload = () => {
+                                // console.log(reader.result)
+
+                                let da = `FileName${id} ${file.name}`
+                                let option = {
+                                  hostname: '127.0.0.1',
+                                  port: 4000,
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'text/plain',
+                                    'Content-Length': da.length
+                                  }
+                                }
+                                let req = http.request(option, res => {
+                                  // console.log(`statusCode: ${res.statusCode}`)
+                                  res.on('data', d => {
+                                    // console.log(d)
+                                  })
+                                })
+                                req.on('error', error => {
+                                  console.error(error)
+                                })
+                                req.write(da)
+                                req.end()
+                                
+                                let i = 0, j = 0;
+                                da = ""
+                                while(i < reader.result.length){
+                                  da += reader.result[i]
+                                  i++; j++
+                                  if(j === MAX_SIZE_OF_MESSAGE){
+                                    console.log("shouldn't be here")
+                                    option = {
+                                      hostname: '127.0.0.1',
+                                      port: 4000,
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'text/plain',
+                                        'Content-Length': da.length
+                                      }
+                                    }
+                                    req = http.request(option, res => {
+                                      // console.log(`statusCode: ${res.statusCode}`)
+                                      res.on('data', d => {
+                                        // console.log(d)
+                                      })
+                                    })
+                                    req.on('error', error => {
+                                      console.error(error)
+                                    })
+                                    req.write(`FileImme${id} ${da}`);
+                                    console.log(da)
+                                    req.end()
+                                    j = 0
+                                    da = ""
+                                  }
+                                }
+                                console.log(da.length)
+                                option = {
+                                  hostname: '127.0.0.1',
+                                  port: 4000,
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'text/plain',
+                                    'Content-Length': da.length
+                                  }
+                                }
+                                req = http.request(option, res => {
+                                  // console.log(`statusCode: ${res.statusCode}`)
+                                  res.on('data', d => {
+                                    // console.log(d)
+                                  })
+                                })
+                                req.on('error', error => {
+                                  console.error(error)
+                                })
+                                req.write(`FileImme${id} ${da}`);
+                                console.log(da)
+                                req.end()
+                              };
+                              reader.readAsBinaryString(file);
+                      
+                              // Prevent upload
+                              return false;
+                            }}>
+                              <Button icon={<UploadOutlined />}>Upload a file or an image</Button>
+                            </Upload>
+                            {/* <Button type="primary" danger onClick={() => {
+                              setChatting(false)
+                              setChatRoom(true)
+                            }}>Upload a file or an image</Button> */}
+                            <br/>
                             <Button type="primary" danger onClick={() => {
                               setChatting(false)
                               setChatRoom(true)
@@ -430,16 +540,15 @@ function App() {
                               }
 
                               const req = http.request(option, res => {
-                                console.log(`statusCode: ${res.statusCode}`)
-
+                                // console.log(`statusCode: ${res.statusCode}`)
                                 res.on('data', d => {
-                                  console.log(d)
+                                  // console.log(d)
                                   friendString = ""
                                   for(var i=0; i<d.length; i++){
                                     friendString += String.fromCharCode(d[i])
                                   }
                                   friendString = friendString.slice(0,-1)
-                                  console.log(friendString)
+                                  // console.log(friendString)
                                   setFriends(friendString.split('\n'))
                                 })
                               })
@@ -473,16 +582,15 @@ function App() {
                               }
 
                               const req = http.request(option, res => {
-                                console.log(`statusCode: ${res.statusCode}`)
-
+                                // console.log(`statusCode: ${res.statusCode}`)
                                 res.on('data', d => {
-                                  console.log(d)
+                                  // console.log(d)
                                   friendString = ""
                                   for(var i=0; i<d.length; i++){
                                     friendString += String.fromCharCode(d[i])
                                   }
                                   friendString = friendString.slice(0,-1)
-                                  console.log(friendString)
+                                  // console.log(friendString)
                                   setFriends(friendString.split('\n'))
                                 })
                               })
@@ -510,16 +618,15 @@ function App() {
                               }
 
                               const req = http.request(option, res => {
-                                console.log(`statusCode: ${res.statusCode}`)
-
+                                // console.log(`statusCode: ${res.statusCode}`)
                                 res.on('data', d => {
-                                  console.log(d)
+                                  // console.log(d)
                                   friendString = ""
                                   for(var i=0; i<d.length; i++){
                                     friendString += String.fromCharCode(d[i])
                                   }
                                   friendString = friendString.slice(0,-1)
-                                  console.log(friendString)
+                                  // console.log(friendString)
                                   setFriends(friendString.split('\n'))
                                 })
                               })

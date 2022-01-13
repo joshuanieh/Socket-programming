@@ -15,7 +15,7 @@
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
-#define buff_len 1024
+#define buff_len 4096
 #define max_number_of_users 10
 #define max_number_of_users_in_database INT16_MAX
 using namespace std;
@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
 	char buff[buff_len], c, httpResponse[buff_len];
 	string data;
 	fd_set readfds;
-	int client_fd, sockets[max_number_of_users] = {0}, max, contentLengthPos, contentLength;
+	int client_fd, sockets[max_number_of_users] = {0}, max, contentLengthPos, contentLength, spacePos;
 	int port = atoi(argv[1]);
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
@@ -52,6 +52,7 @@ int main(int argc, char const *argv[]) {
 	setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&o, sizeof(o));
     filesystem::create_directory(root);
 	while(true){
+		cout << "============================================================" << endl;
 		FD_ZERO(&readfds);
 	    FD_SET(socket_fd, &readfds);
 	    max = socket_fd;
@@ -97,6 +98,8 @@ int main(int argc, char const *argv[]) {
 					
             		//Format: "Login {username}"
             		//Return: user index
+					cout << "XXXXX " << data.substr(0, 8) << endl;
+					cout << "YYYYY " << data << endl;
 					if(data.substr(0, 5) == "Login") {
 						name = data.substr(6);
 						int k;
@@ -304,17 +307,23 @@ int main(int argc, char const *argv[]) {
 					//Format: "FileImme{number} {data}"
 					//Return: "0"
 					else if(data.substr(0, 8) == "FileImme") {
+						// cout << "should be here" << endl;
 						index = stoi(data.substr(8, data.find(" ") - 8));
-						data = data.substr(data.find(" ") + 1);
+						spacePos = data.find(" ");
+						data = data.substr(spacePos + 1);
+						cout << "data: " << data << endl;
+						// cout << "Length of data: " << data.length() << endl;
 						contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
                 		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-						
+						// cout << "contentLength: " << contentLength << endl;
+						// cout << "data.find: " << data.find(" ") << endl;
+
 						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
-						file.write(data.c_str(), contentLength);
+						file.write(data.c_str(), contentLength - spacePos - 1);
 						file.close();
 
 						file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary|ios::app);
-						file.write(data.c_str(), contentLength);
+						file.write(data.c_str(), contentLength - spacePos - 1);
 						file.close();
 						
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
@@ -370,7 +379,7 @@ int main(int argc, char const *argv[]) {
 						filesize[index] = file.tellg();
 
 						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, (string)filesize[index]);
+						strcat(httpResponse, to_string(filesize[index]).c_str());
 				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 						close(sockets[i]);
 						sockets[i] = 0;
