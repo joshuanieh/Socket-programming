@@ -218,12 +218,13 @@ int main(int argc, char const *argv[]) {
 						// file.seekg (0, ios::end);
 					 //    int length = file.tellg();
 					    chatBase[index] = buff_len - strlen(httpResponse);
-						file.seekg(chatBase[index], ios::end);
+						// file.seekg(chatBase[index], ios::end);
 						strcpy(buff, "");
 						file.read(buff, buff_len - strlen(httpResponse));
 						file.close();
 						strcat(httpResponse, buff);
-						cout << httpResponse << endl;
+						cout << "buff: " << buff << endl;
+						cout << "response: " << httpResponse << endl;
 				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 					}
 
