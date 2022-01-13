@@ -219,6 +219,7 @@ int main(int argc, char const *argv[]) {
 					    int length = file.tellg();
 					    chatBase[index] = buff_len - strlen(httpResponse) > length ? length : buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
+						strcpy(buff, "");
 						file.read(buff, chatBase[index]);
 						file.close();
 						strcat(httpResponse, buff);
@@ -227,10 +228,11 @@ int main(int argc, char const *argv[]) {
 					}
 
 					//Format: "More {number}"
+					//Return: More chat history
 					else if(data.substr(0, 4) == "More") {
         				index = stoi(data.substr(5));
 						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
 						chatBase[index] += buff_len - strlen(httpResponse);
 						file.seekg(chatBase[index], ios::end);
 						file.read(buff, buff_len - strlen(httpResponse));
