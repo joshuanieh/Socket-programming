@@ -36,7 +36,7 @@ function App() {
 
   const bodyRef = useRef(null)
 
-  let friendList = []
+  let friendString = ""
 
   const displayStatus = (s) => {
     if (s.msg) {
@@ -129,12 +129,9 @@ function App() {
             </div>
             <div>
               {friends.map((e, i) => (
-                !(i%2) ?
-                  <p className="App-message" key={i}>
-                    <Tag color="blue">{e}</Tag>
-                  </p>
-                  :
-                  <></>
+                <p className="App-message" key={i}>
+                  <Tag color="blue">{e}</Tag>
+                </p>
               ))}
             </div>
             <Button type="primary" danger onClick={() => {
@@ -254,12 +251,13 @@ function App() {
 
                             res.on('data', d => {
                               console.log(d)
-                              friendList = []
+                              friendString = ""
                               for(var i=0; i<d.length; i++){
-                                friendList.push(String.fromCharCode(d[i]))
+                                friendString += String.fromCharCode(d[i])
                               }
-                              console.log(friendList)
-                              setFriends(friendList)
+                              friendString = friendString.slice(0,-1)
+                              console.log(friendString)
+                              setFriends(friendString.split('\n'))
                             })
                           })
 
