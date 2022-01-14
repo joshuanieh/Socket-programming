@@ -128,14 +128,15 @@ int main(int argc, char const *argv[]) {
 
 						//Format: "FileFinish{number} {file size} {data}\0\0\0\0"
 						//Return: "0"
-						else if(data.substr(0, 8) == "FileFinish") {
+						else if(data.substr(0, 10) == "FileFinish") {
 							fileFlag = false;
 							int sep1 = data.find(" ");
 							int sep2 = data.find(" ", sep1 + 1);
-							index = stoi(data.substr(8, sep1 - 8));
+							index = stoi(data.substr(10, sep1 - 10));
 							int length = stoi(data.substr(sep1 + 1, sep2 - sep1 - 1));
 							data = data.substr(sep2 + 1);
 							cout << "data: " << data << endl;
+							cout << "length: " << length << endl;
 
 							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
 							file.write(data.c_str(), length);
