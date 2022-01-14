@@ -403,16 +403,25 @@ function App() {
                                               console.log(fileString)
                                               console.log(fileString.length)
 
-                                              const content = 'Some content!'
-
-                                              fs.writeFile('test.txt', content, err => {
-                                                if (err) {
-                                                  console.error(err)
-                                                  return
+                                              let _option = {
+                                                hostname: '127.0.0.1',
+                                                port: 5000,
+                                                method: 'POST',
+                                                headers: {
+                                                  'Content-Type': 'text/plain',
+                                                  'Content-Length': fileString.length
                                                 }
-                                                //file written successfully
-                                              })
+                                              }
 
+                                              let _req = http.request(_option, _res => {
+                                                console.log(_res)
+                                              })
+                                              _req.on('error', error => {
+                                                console.error(error)
+                                              })
+                                              console.log(e.slice(4))
+                                              _req.write(`${e.slice(4)} ${fileString}`);
+                                              _req.end()
                                             })
                                           })
                                           req.on('error', error => {
@@ -424,6 +433,7 @@ function App() {
                                           // da = ""
                                           break
                                         }
+                                        
                                       }}>{e.slice(4)}</Tag>
                                     </p> 
                                     ) : (
@@ -595,7 +605,6 @@ function App() {
                                   }
                                 }
 
-
                                 console.log(da.length)
 
                                 let len = da.length
@@ -625,9 +634,10 @@ function App() {
                                   msg: 'Uploaded successfully.'
                                 })
                                 req.end()
+                                setMessagesList([...messagesList, `FA: ${file.name}`])
                               };
                               reader.readAsBinaryString(file);
-                      
+
                               // Prevent upload
                               return false;
                             }}>
