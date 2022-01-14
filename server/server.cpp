@@ -136,16 +136,13 @@ int main(int argc, char const *argv[]) {
 							int length = stoi(data.substr(sep1 + 1, sep2 - sep1 - 1));
 							data = data.substr(sep2 + 1);
 							cout << "data: " << data << endl;
-							
-							contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
-	                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-							
+
 							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
-							file.write(data.c_str(), contentLength - sep2 - 1);
+							file.write(data.c_str(), length);
 							file.close();
 
 							file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary|ios::app);
-							file.write(data.c_str(), contentLength - sep2 - 1);
+							file.write(data.c_str(), length);
 							file.close();
 
 							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
