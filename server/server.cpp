@@ -122,6 +122,7 @@ int main(int argc, char const *argv[]) {
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 							strcat(httpResponse, "0");
 					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							
 							close(sockets[i]);
 							sockets[i] = 0;
 						}
@@ -147,17 +148,18 @@ int main(int argc, char const *argv[]) {
 							file.close();
 
 							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
-							file.write(("FA: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
+							file.write(("FA: " + filename[index] + "\n").c_str(), filename[index].size() + 5);
 							file.close();
-							chatBase[index] += filename[index].size() + 8;
+							// chatBase[index] += filename[index].size() + 8;
 
 							file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
-							file.write(("FB: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
+							file.write(("FB: " + filename[index] + "\n").c_str(), filename[index].size() + 5);
 							file.close();
 							
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 							strcat(httpResponse, "0");
 					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							
 							close(sockets[i]);
 							sockets[i] = 0;
 
@@ -326,7 +328,7 @@ int main(int argc, char const *argv[]) {
 						    int length = file.tellg();
 						    cout << "len: " << length << endl;
 						    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
-							file.seekg(- chatBase[index], ios::end);
+							file.seekg(length - chatBase[index], ios::beg);
 							cout << chatBase[index] << endl;
 							cout << file.tellg() << endl;
 							memset(buff, '\0', buff_len);
@@ -365,7 +367,8 @@ int main(int argc, char const *argv[]) {
 							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
 							file.write(("A: " + data + "\n").c_str(), data.size() + 4);
 							file.close();
-							chatBase[index] += data.size() + 4;
+							// chatBase[index] += data.size() + 4;
+							cout << chattingFriend[index] << endl;
 
 							file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
 							file.write(("B: " + data + "\n").c_str(), data.size() + 4);
