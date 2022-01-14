@@ -97,6 +97,8 @@ int main(int argc, char const *argv[]) {
 	            		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
 						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 
+						cout << "data: " << data << endl;
+
 	                	//Format: "FileImme{number} {data}"
 						//Return: "0"
 						if(data.substr(0, 8) == "FileImme") {
@@ -202,8 +204,6 @@ int main(int argc, char const *argv[]) {
 						
 	            		//Format: "Login {username}"
 	            		//Return: user index
-						cout << "data.substr(0, 8): " << data.substr(0, 8) << endl;
-						cout << "data: " << data << endl;
 						if(data.substr(0, 5) == "Login") {
 							name = data.substr(6);
 							int k;
@@ -412,25 +412,6 @@ int main(int argc, char const *argv[]) {
 							sockets[i] = 0;
 						}
 
-						//Format: "Download{number} {filename}"
-						//Return: "filesize" (of no need)
-						else if(data.substr(0, 8) == "Download") {
-							index = stoi(data.substr(8, data.find(" ") - 8));
-							filename[index] = data.substr(data.find(" ") + 1);
-							base[index] = 0;
-							
-							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
-							file.seekg(0, ios::end);
-							file.close();
-							filesize[index] = file.tellg();
-
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-							strcat(httpResponse, to_string(filesize[index]).c_str());
-					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-							close(sockets[i]);
-							sockets[i] = 0;
-						}
-
 						//client should detect the last download
 						//Format: "DownloadImme{number}"
 						//Return: File content
@@ -440,15 +421,36 @@ int main(int argc, char const *argv[]) {
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 							headerLength = strlen(httpResponse);
 							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
-							file.seekg(base[index], ios::end);
+							file.seekg(base[index], ios::beg);
 							memset(buff, '\0', buff_len);
-							int length = filesize[index] > base[index] + buff_len - strlen(httpResponse) ? buff_len - strlen(httpResponse) : filesize[index] - base[index];
+							// cout << filesize[index] << " " << base[index] << " " << strlen(httpResponse) << endl;
+							int length = filesize[index] > base[index] + buff_len - headerLength ? buff_len - headerLength : filesize[index] - base[index];
 							file.read(buff, length);
 							file.close();
 							base[index] += length;
 
 							strcat(httpResponse, buff);
 					    	send(sockets[i], httpResponse, headerLength + length, MSG_NOSIGNAL);
+							cout << "response: " << httpResponse << endl;
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
+
+						//Format: "Download{number} {filename}"
+						//Return: "filesize" (of no need)
+						else if(data.substr(0, 8) == "Download") {
+							index = stoi(data.substr(8, data.find(" ") - 8));
+							filename[index] = data.substr(data.find(" ") + 1);
+							base[index] = 0;
+							
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
+							file.seekg(0, ios::end);
+							filesize[index] = file.tellg();
+							file.close();
+
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, to_string(filesize[index]).c_str());
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							close(sockets[i]);
 							sockets[i] = 0;
 						}

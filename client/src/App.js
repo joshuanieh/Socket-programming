@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 // import useChat from './useChat'
 import { Upload, Button, Input, message, Tag } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
+const fs = require('fs');
 
 function App() {
   // const { status, opened, messages, sendMessage, clearMessages } = useChat()
@@ -24,11 +25,9 @@ function App() {
   //     data: 'lll'
   // }).end();
   const [id, setID] = useState(0)
-  const [status, setStatus] = useState({})
   const [messages, setMessages] = useState("")
   const [messagesList, setMessagesList] = useState([])
   const [friends, setFriends] = useState([])
-  const [textFinish, setTextFinish] = useState("")
   const [username, setUsername] = useState('')
   const [options, setOptions] = useState(false)
   const [chatRoom, setChatRoom] = useState(false)
@@ -37,11 +36,11 @@ function App() {
   const [addFriend, setAddFriend] = useState(false)
   const [removeFriend, setRemoveFriend] = useState(false)
   const [listFriends, setListFriends] = useState(false)
-  const [body, setBody] = useState('')
 
   const bodyRef = useRef(null)
 
   const MAX_SIZE_OF_DATA = 3000;
+  const SERVER_BUF_SIZE = 4096;
 
   const props = {
     name: 'file',
@@ -49,20 +48,11 @@ function App() {
     headers: {
       authorization: 'authorization-text',
     }
-    // onChange(info) {
-    //   if (info.file.status !== 'uploading') {
-    //     console.log(info.file, info.fileList);
-    //   }
-    //   if (info.file.status === 'done') {
-    //     message.success(`${info.file.name} file uploaded successfully`);
-    //   } else if (info.file.status === 'error') {
-    //     message.error(`${info.file.name} file upload failed.`);
-    //   }
-    // }
   }
 
   let friendString = ""
   let messageString = ""
+  let fileString = ""
 
   useEffect(() => {
     if(chatting){
@@ -92,10 +82,6 @@ function App() {
       }
     }
   }
-
-  // useEffect(() => {
-  //   displayStatus(status)
-  // }, [status])
 
   return (
     <div className="App">
@@ -139,6 +125,10 @@ function App() {
 
                   req.write(da)
                   req.end()
+                  displayStatus({
+                    type: 'success',
+                    msg: 'Logged in sucessfully'
+                  })
                   setOptions(true)
               }
               else {
@@ -210,7 +200,7 @@ function App() {
                             else if(d[0] === 48){
                               displayStatus({
                                 type: 'success',
-                                msg: 'Add user successfully'
+                                msg: 'Added successfully.'
                               })
                             }
                           })
@@ -265,7 +255,7 @@ function App() {
                                 // console.log(d)
                                 displayStatus({
                                   type: 'success',
-                                  msg: 'Remove friend successfully.'
+                                  msg: 'Removed successfully.'
                                 })
                                 const index = friends.indexOf(e);
                                 const copy = [...friends]
@@ -358,12 +348,142 @@ function App() {
                               {messagesList.map((e, i) => (
                                 e[0] === 'A' ? (
                                   <p key={i} align="right">
-                                    <Tag  color="blue">{e.slice(3)}</Tag>
+                                    <Tag color="#69c0ff">{e.slice(3)}</Tag>
                                   </p> 
-                                ) : (
-                                  <p key={i} align="left">
-                                    <Tag color="green">{e.slice(3)}</Tag>
-                                  </p>
+                                ) : ( e[0] === 'B' ? (
+                                    <p key={i} align="left">
+                                      <Tag color="#95de64">{e.slice(3)}</Tag>
+                                    </p>
+                                  ) : ( e[1] === 'A' ? (
+                                    <p key={i} align="right">
+                                      <Tag color="#096dd9" onClick={() => {
+                                        let da = `Download${id} ${e.slice(4)}`
+                                        let option = {
+                                          hostname: '127.0.0.1',
+                                          port: 4000,
+                                          method: 'POST',
+                                          headers: {
+                                            'Content-Type': 'text/plain',
+                                            'Content-Length': da.length
+                                          }
+                                        }
+                                        let req = http.request(option, res => {
+                                          // console.log(`statusCode: ${res.statusCode}`)
+                                          res.on('data', d => {
+                                            console.log(d)
+                                          })
+                                        })
+                                        req.on('error', error => {
+                                          console.error(error)
+                                        })
+                                        req.write(da)
+                                        req.end()
+
+                                        while(true){
+                                          da = `DownloadImme${id}`
+                                          // da += reader.result[i]
+                                          // i++; j++
+                                          option = {
+                                            hostname: '127.0.0.1',
+                                            port: 4000,
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'text/plain',
+                                              'Content-Length': da.length
+                                            }
+                                          }
+                                          req = http.request(option, res => {
+                                            // console.log(`statusCode: ${res.statusCode}`)
+                                            res.on('data', d => {
+                                              // console.log(d)
+                                              fileString = ""
+                                              for(var i=0; i<d.length; i++){
+                                                fileString += String.fromCharCode(d[i])
+                                              }
+                                              console.log(fileString)
+                                              console.log(fileString.length)
+
+                                              const content = 'Some content!'
+
+                                              fs.writeFile('test.txt', content, err => {
+                                                if (err) {
+                                                  console.error(err)
+                                                  return
+                                                }
+                                                //file written successfully
+                                              })
+
+                                            })
+                                          })
+                                          req.on('error', error => {
+                                            console.error(error)
+                                          })
+                                          req.write(da);
+                                          req.end()
+                                          // j = 0
+                                          // da = ""
+                                          break
+                                        }
+                                      }}>{e.slice(4)}</Tag>
+                                    </p> 
+                                    ) : (
+                                      <p key={i} align="left">
+                                        <Tag color="#389e0d" onClick={() => {
+                                          console.log("Here")
+                                          let da = `Download${id} ${e.slice(4)}`
+                                          let option = {
+                                            hostname: '127.0.0.1',
+                                            port: 4000,
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'text/plain',
+                                              'Content-Length': da.length
+                                            }
+                                          }
+                                          let req = http.request(option, res => {
+                                            // console.log(`statusCode: ${res.statusCode}`)
+                                            res.on('data', d => {
+                                              // console.log(d)
+                                            })
+                                          })
+                                          req.on('error', error => {
+                                            console.error(error)
+                                          })
+                                          req.write(da)
+                                          req.end()
+
+                                          while(true){
+                                            da = `DownloadImme${id}`
+                                            // da += reader.result[i]
+                                            // i++; j++
+                                            option = {
+                                              hostname: '127.0.0.1',
+                                              port: 4000,
+                                              method: 'POST',
+                                              headers: {
+                                                'Content-Type': 'text/plain',
+                                                'Content-Length': da.length
+                                              }
+                                            }
+                                            req = http.request(option, res => {
+                                              // console.log(`statusCode: ${res.statusCode}`)
+                                              res.on('data', d => {
+                                                console.log(d)
+                                              })
+                                            })
+                                            req.on('error', error => {
+                                              console.error(error)
+                                            })
+                                            req.write(da);
+                                            req.end()
+                                            // j = 0
+                                            // da = ""
+                                            break
+                                          }
+                                        }}>{e.slice(4)}</Tag>
+                                      </p> 
+                                    )
+                                  )
                                 )
                               ))}
                             </div>
@@ -449,7 +569,6 @@ function App() {
                                   da += reader.result[i]
                                   i++; j++
                                   if(j === MAX_SIZE_OF_DATA - id.length - 9){
-                                    console.log("here")
                                     option = {
                                       hostname: '127.0.0.1',
                                       port: 4000,
@@ -478,27 +597,6 @@ function App() {
 
 
                                 console.log(da.length)
-                                // option = {
-                                //   hostname: '127.0.0.1',
-                                //   port: 4000,
-                                //   method: 'POST',
-                                //   headers: {
-                                //     'Content-Type': 'text/plain',
-                                //     'Content-Length': da.length
-                                //   }
-                                // }
-                                // req = http.request(option, res => {
-                                //   // console.log(`statusCode: ${res.statusCode}`)
-                                //   res.on('data', d => {
-                                //     // console.log(d)
-                                //   })
-                                // })
-                                // req.on('error', error => {
-                                //   console.error(error)
-                                // })
-                                // req.write(`FileImme${id} ${da}`);
-                                // console.log(da)
-                                // req.end()
 
                                 let len = da.length
                                 da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 12 - id.length - `${da.length}`.length)
@@ -522,6 +620,10 @@ function App() {
                                   console.error(error)
                                 })
                                 req.write(da)
+                                displayStatus({
+                                  type: 'success',
+                                  msg: 'Uploaded successfully.'
+                                })
                                 req.end()
                               };
                               reader.readAsBinaryString(file);
@@ -540,7 +642,10 @@ function App() {
                           :
                           <>
                             <div className="App-title">
-                              <h1>Options</h1>
+                              <h1>Welcome, {username}!</h1>
+                            </div>
+                            <div className="App-title">
+                              <h2>Choose an option to continue...</h2>
                             </div>
                             <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
                               /////////////////////sendMessage('List friends')
