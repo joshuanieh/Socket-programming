@@ -31,3 +31,5 @@ server/server
 client/src/client
 server/server.o
 public
+server/client_dir
+App2.js
