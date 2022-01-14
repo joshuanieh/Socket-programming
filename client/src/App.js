@@ -41,7 +41,7 @@ function App() {
 
   const bodyRef = useRef(null)
 
-  const MAX_SIZE_OF_MESSAGE = 3096;
+  const MAX_SIZE_OF_DATA = 3000;
 
   const props = {
     name: 'file',
@@ -138,7 +138,6 @@ function App() {
                   })
 
                   req.write(da)
-                  console.log("a")
                   req.end()
                   setOptions(true)
               }
@@ -222,7 +221,6 @@ function App() {
                         })
 
                         req.write(da)
-                        console.log("b")
                         req.end()
                     }
                     else {
@@ -281,7 +279,6 @@ function App() {
                             })
     
                             req.write(da)
-                            console.log("c")
                             req.end()
                           }}>{e}</Button>
                         </p>
@@ -337,7 +334,6 @@ function App() {
                                 })
         
                                 req.write(da)
-                                console.log("d")
                                 req.end()
                                 setChattingFriend(e)
                                 setChatting(true)
@@ -410,7 +406,6 @@ function App() {
                                   })
           
                                   req.write(da)
-                                  console.log("e")
                                   req.end()
                                   msg = "A: " + msg
                                   setMessagesList([...messagesList, msg])
@@ -424,8 +419,7 @@ function App() {
 
                               reader.onload = () => {
                                 // console.log(reader.result)
-
-                                let da = `FileName${id} ${file.name}`
+                                let da = `FileName${id} ${file.name} ${MAX_SIZE_OF_DATA}`
                                 let option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
@@ -445,16 +439,16 @@ function App() {
                                   console.error(error)
                                 })
                                 req.write(da)
-                                console.log("f")
                                 req.end()
                                 
+
                                 let i = 0, j = 0;
                                 da = ""
                                 console.log(reader.result.length)
                                 while(i < reader.result.length){
                                   da += reader.result[i]
                                   i++; j++
-                                  if(j === MAX_SIZE_OF_MESSAGE){
+                                  if(j === MAX_SIZE_OF_DATA - id.length - 9){
                                     console.log("here")
                                     option = {
                                       hostname: '127.0.0.1',
@@ -475,14 +469,39 @@ function App() {
                                       console.error(error)
                                     })
                                     req.write(`FileImme${id} ${da}`);
-                                    console.log("g")
                                     console.log(da)
                                     req.end()
                                     j = 0
                                     da = ""
                                   }
                                 }
+
+
                                 console.log(da.length)
+                                // option = {
+                                //   hostname: '127.0.0.1',
+                                //   port: 4000,
+                                //   method: 'POST',
+                                //   headers: {
+                                //     'Content-Type': 'text/plain',
+                                //     'Content-Length': da.length
+                                //   }
+                                // }
+                                // req = http.request(option, res => {
+                                //   // console.log(`statusCode: ${res.statusCode}`)
+                                //   res.on('data', d => {
+                                //     // console.log(d)
+                                //   })
+                                // })
+                                // req.on('error', error => {
+                                //   console.error(error)
+                                // })
+                                // req.write(`FileImme${id} ${da}`);
+                                // console.log(da)
+                                // req.end()
+
+                                da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 9 - id.length)
+                                da = `FileFinish${id} ${MAX_SIZE_OF_DATA} ${da}`
                                 option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
@@ -501,9 +520,7 @@ function App() {
                                 req.on('error', error => {
                                   console.error(error)
                                 })
-                                req.write(`FileImme${id} ${da}`);
-                                console.log("h")
-                                console.log(da)
+                                req.write(da)
                                 req.end()
                               };
                               reader.readAsBinaryString(file);
@@ -562,7 +579,6 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
-                              console.log("i")
                               req.end()
                               /////////////////////////////
                               setListFriends(true)
@@ -605,7 +621,6 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
-                              console.log("j")
                               req.end()
                               setRemoveFriend(true)
                             }}>
@@ -642,7 +657,6 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
-                              console.log("k")
                               req.end()
                               setChatRoom(true)
                             }}>
