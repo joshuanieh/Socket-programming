@@ -419,7 +419,7 @@ function App() {
 
                               reader.onload = () => {
                                 // console.log(reader.result)
-                                let da = `FileName${id} ${file.name} ${MAX_SIZE_OF_DATA}`
+                                let da = `FileName${id} ${file.name}`
                                 let option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
@@ -500,8 +500,9 @@ function App() {
                                 // console.log(da)
                                 // req.end()
 
-                                da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 9 - id.length)
-                                da = `FileFinish${id} ${MAX_SIZE_OF_DATA} ${da}`
+                                let len = da.length
+                                da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 12 - id.length - `${da.length}`.length)
+                                da = `FileFinish${id} ${len} ${da}`
                                 option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
