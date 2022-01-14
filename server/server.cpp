@@ -90,7 +90,7 @@ int main(int argc, char const *argv[]) {
                 	// 	else if(httpRequest[i] == '\n') cout << "\\n";
                 	// 	else cout << httpRequest[i];
                 	// }
-                	cout << httpRequest << endl;
+                	cout << "httpRequest: " << httpRequest << endl;
 
             		// contentLengthPos = httpRequest.find("Content-Length: ");
             		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
@@ -98,8 +98,8 @@ int main(int argc, char const *argv[]) {
 					
             		//Format: "Login {username}"
             		//Return: user index
-					cout << "XXXXX " << data.substr(0, 8) << endl;
-					cout << "YYYYY " << data << endl;
+					cout << "data.substr(0, 8): " << data.substr(0, 8) << endl;
+					cout << "data: " << data << endl;
 					if(data.substr(0, 5) == "Login") {
 						name = data.substr(6);
 						int k;

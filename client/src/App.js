@@ -138,6 +138,7 @@ function App() {
                   })
 
                   req.write(da)
+                  console.log("a")
                   req.end()
                   setOptions(true)
               }
@@ -221,6 +222,7 @@ function App() {
                         })
 
                         req.write(da)
+                        console.log("b")
                         req.end()
                     }
                     else {
@@ -279,6 +281,7 @@ function App() {
                             })
     
                             req.write(da)
+                            console.log("c")
                             req.end()
                           }}>{e}</Button>
                         </p>
@@ -334,6 +337,7 @@ function App() {
                                 })
         
                                 req.write(da)
+                                console.log("d")
                                 req.end()
                                 setChattingFriend(e)
                                 setChatting(true)
@@ -406,7 +410,7 @@ function App() {
                                   })
           
                                   req.write(da)
-
+                                  console.log("e")
                                   req.end()
                                   msg = "A: " + msg
                                   setMessagesList([...messagesList, msg])
@@ -441,6 +445,7 @@ function App() {
                                   console.error(error)
                                 })
                                 req.write(da)
+                                console.log("f")
                                 req.end()
                                 
                                 let i = 0, j = 0;
@@ -450,7 +455,7 @@ function App() {
                                   da += reader.result[i]
                                   i++; j++
                                   if(j === MAX_SIZE_OF_MESSAGE){
-                                    console.log("shouldn't be here")
+                                    console.log("here")
                                     option = {
                                       hostname: '127.0.0.1',
                                       port: 4000,
@@ -470,6 +475,7 @@ function App() {
                                       console.error(error)
                                     })
                                     req.write(`FileImme${id} ${da}`);
+                                    console.log("g")
                                     console.log(da)
                                     req.end()
                                     j = 0
@@ -496,6 +502,7 @@ function App() {
                                   console.error(error)
                                 })
                                 req.write(`FileImme${id} ${da}`);
+                                console.log("h")
                                 console.log(da)
                                 req.end()
                               };
@@ -506,10 +513,6 @@ function App() {
                             }}>
                               <Button icon={<UploadOutlined />}>Upload a file or an image</Button>
                             </Upload>
-                            {/* <Button type="primary" danger onClick={() => {
-                              setChatting(false)
-                              setChatRoom(true)
-                            }}>Upload a file or an image</Button> */}
                             <br/>
                             <Button type="primary" danger onClick={() => {
                               setChatting(false)
@@ -559,6 +562,7 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
+                              console.log("i")
                               req.end()
                               /////////////////////////////
                               setListFriends(true)
@@ -601,6 +605,7 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
+                              console.log("j")
                               req.end()
                               setRemoveFriend(true)
                             }}>
@@ -637,6 +642,7 @@ function App() {
                               })
 
                               req.write(`List friends ${id}`)
+                              console.log("k")
                               req.end()
                               setChatRoom(true)
                             }}>

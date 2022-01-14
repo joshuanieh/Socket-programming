@@ -111,7 +111,7 @@ int main(int argc, char const *argv[]) {
 							file.close();
 							cout << "put " << filename << " successfully" << endl;
 						}
-					  	else cout << "The " << filename << " doesn’t exist" << endl;
+					  	else cout << "The " << filename << " doesn't exist" << endl;
 					}
 					else if(command == "get") {
 						if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
@@ -124,7 +124,7 @@ int main(int argc, char const *argv[]) {
 						send(client_fd, filename.c_str(), buff_len, MSG_NOSIGNAL);
 						recv(client_fd, buff, buff_len, MSG_WAITALL);;
 						if(strcmp(buff, "The file exists.") != 0) {
-							cout << "The " << filename << " doesn’t exist" << endl;
+							cout << "The " << filename << " doesn't exist" << endl;
 							continue;
 						}
 						recv(client_fd, buff, buff_len, MSG_WAITALL);
