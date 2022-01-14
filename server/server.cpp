@@ -25,21 +25,21 @@ int main(int argc, char const *argv[]) {
 	const filesystem::path root{fileroot};
 	vector<string> filelist, allUsername;
 	string chattingFriend[max_number_of_users_in_database], filename[max_number_of_users_in_database];
-	int filesize[max_number_of_users_in_database];
+	int filesize[max_number_of_users_in_database], headerLength;
 	for (const auto &n : filesystem::directory_iterator{root}) {
 		if (n.is_directory())
             allUsername.push_back(n.path().stem().string());
 	}
 	streampos begin, end;
 	streampos base[max_number_of_users_in_database], chatBase[max_number_of_users_in_database];
-	bool flag;
+	bool flag, fileFlag = false;
 	int o = true, j, index;
 	fstream file;
 	// long long filesize[max_number_of_users];
 	char buff[buff_len], c, httpResponse[buff_len];
 	string data;
 	fd_set readfds;
-	int client_fd, sockets[max_number_of_users] = {0}, max, contentLengthPos, contentLength, spacePos;
+	int client_fd, sockets[max_number_of_users] = {0}, max, contentLengthPos, contentLength;
 	int port = atoi(argv[1]);
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
@@ -75,338 +75,386 @@ int main(int argc, char const *argv[]) {
         }
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
-                if(recv(sockets[i], buff, buff_len, 0) <= 0) {
-                    close(sockets[i]);
-                    sockets[i] = 0;
-                }
-                else{
-					cout << sockets[i] << endl;
-                	
-                	flag = false;
-                	httpRequest = buff;
-                	// print out http request
-                	// for (int i = 0; i < httpRequest.size(); ++i) {
-                	// 	if(httpRequest[i] == '\r') cout << "\\r";
-                	// 	else if(httpRequest[i] == '\n') cout << "\\n";
-                	// 	else cout << httpRequest[i];
-                	// }
-                	cout << "httpRequest: " << httpRequest << endl;
+            	if(fileFlag) {
+            		if(recv(sockets[i], buff, headerLength + 3000, MSG_WAITALL) <= 0) {
+	                    close(sockets[i]);
+	                    sockets[i] = 0;
+	                }
+	                else {
+	                	cout << sockets[i] << endl;
+	                	
+	                	flag = false;
+	                	httpRequest = buff;
+	                	// print out http request
+	                	// for (int i = 0; i < httpRequest.size(); ++i) {
+	                	// 	if(httpRequest[i] == '\r') cout << "\\r";
+	                	// 	else if(httpRequest[i] == '\n') cout << "\\n";
+	                	// 	else cout << httpRequest[i];
+	                	// }
+	                	cout << "httpRequest: " << httpRequest << endl;
 
-            		// contentLengthPos = httpRequest.find("Content-Length: ");
-            		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-					data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
-					
-            		//Format: "Login {username}"
-            		//Return: user index
-					cout << "data.substr(0, 8): " << data.substr(0, 8) << endl;
-					cout << "data: " << data << endl;
-					if(data.substr(0, 5) == "Login") {
-						name = data.substr(6);
-						int k;
-						cout << name << endl;
-						for(k = 0; k < allUsername.size(); k++) {
-							cout << "1" << endl;
-							if(allUsername[k] == name) {
-								cout << "2" << endl;
-				    			flag = true;
-							    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-				    			sprintf(httpResponse, "%s%d", httpResponse, k);
-								cout << httpResponse << endl;
-							    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-								close(sockets[i]);
-								sockets[i] = 0;
-				    			break;
-							}
+	            		// contentLengthPos = httpRequest.find("Content-Length: ");
+	            		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
+						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
+
+	                	//Format: "FileImme{number} {data}"
+						//Return: "0"
+						if(data.substr(0, 8) == "FileImme") {
+							// cout << "should be here" << endl;
+							index = stoi(data.substr(8, data.find(" ") - 8));
+							int sep = data.find(" ");
+							data = data.substr(sep + 1);
+							cout << "data: " << data << endl;
+							// cout << "Length of data: " << data.length() << endl;
+							contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
+	                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
+							// cout << "contentLength: " << contentLength << endl;
+							// cout << "data.find: " << data.find(" ") << endl;
+
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
+							file.write(data.c_str(), contentLength - sep - 1);
+							file.close();
+
+							file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary|ios::app);
+							file.write(data.c_str(), contentLength - sep - 1);
+							file.close();
+							
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, "0");
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
 						}
-						if(flag) continue;
-						cout << "3" << endl;
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-		    			sprintf(httpResponse, "%s%d", httpResponse, k);
-					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-						cout << httpResponse << endl;
-		    			allUsername.push_back(name);
-						filesystem::create_directory(root/name);
-					}
 
-					//Format: "List friends {number}"
-            		//Return: all friends' names
-        			else if(data.substr(0, 12) == "List friends") {
-        				index = stoi(data.substr(13));
+						//Format: "FileFinish{number} {file size} {data}\0\0\0\0"
+						//Return: "0"
+						else if(data.substr(0, 8) == "FileFinish") {
+							fileFlag = false;
+							int sep1 = data.find(" ");
+							int sep2 = data.find(" ", sep1 + 1);
+							index = stoi(data.substr(8), sep1 - 8);
+							int length = stoi(data.substr(sep1 + 1), sep2 - sep1 - 1);
+							data = data.substr(sep2 + 1);
+							cout << "data: " << data << endl;
+							
+							contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
+	                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
+							
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
+							file.write(data.c_str(), contentLength - sep2 - 1);
+							file.close();
 
-    					for (const auto &n : filesystem::directory_iterator{root/allUsername[index]}) {
-							if(is_directory(n))
-								filelist.push_back(n.path().stem().string());
+							file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary|ios::app);
+							file.write(data.c_str(), contentLength - sep2 - 1);
+							file.close();
+
+							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
+							file.write(("FA: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
+							file.close();
+							chatBase[index] += filename[index].size() + 8;
+
+							file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
+							file.write(("FB: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
+							file.close();
+							
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, "0");
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+
+							// strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							// strcat(httpResponse, "File finish");
+					  //   	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+
+					  //   	for(int m = 0; m < max_number_of_users; m++) {
+					  //   		if (username[m] == chattingFriend[i]) {
+					  //   			if(chattingFriend[m] == username[i]) {
+					  //   				send(sockets[m], ("Filename " + filename[i]).c_str(), ("Filename " + filename[i]).size(), MSG_NOSIGNAL);
+					  //   			}
+					  //   			break;
+					  //   		}
+					  //   	}
 						}
-					    sort(filelist.begin(), filelist.end());
-					    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-					    for (const string &friendName : filelist) {
-					    	strcat(httpResponse, friendName.c_str());
-					    	strcat(httpResponse, "\n");
-					    	// cout << file.path().filename().string() << endl;
-					    }
-					    filelist.clear();
-						cout << httpResponse << endl;
-					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
+	                }
+            	}
+                else {
+                	if(recv(sockets[i], buff, buff_len, 0) <= 0) {
+	                    close(sockets[i]);
+	                    sockets[i] = 0;
+                	}
+	                else{
+						cout << sockets[i] << endl;
+	                	
+	                	flag = false;
+	                	httpRequest = buff;
+	                	// print out http request
+	                	// for (int i = 0; i < httpRequest.size(); ++i) {
+	                	// 	if(httpRequest[i] == '\r') cout << "\\r";
+	                	// 	else if(httpRequest[i] == '\n') cout << "\\n";
+	                	// 	else cout << httpRequest[i];
+	                	// }
+	                	cout << "httpRequest: " << httpRequest << endl;
 
-					//Format: "Add {username} {number}"
-					//Return: "0" | "1"
-					else if(data.substr(0, 3) == "Add") {
-						int sep = data.find(" ", 4);
-						name = data.substr(4, sep - 4);
-        				index = stoi(data.substr(sep + 1));
-
-						for(auto &user : allUsername) {
-							if(user == name) {
-								file.open((root/allUsername[index]/name).string() + ".txt", ios::out|ios::binary|ios::app);
-			                	file.close();
-								filesystem::create_directory(root/allUsername[index]/name);
-
-								file.open((root/name/allUsername[index]).string() + ".txt", ios::out|ios::binary|ios::app);
-			                	file.close();
-								filesystem::create_directory(root/name/allUsername[index]);
-
-					    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-					    		strcat(httpResponse, "0");
-							    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-								cout << httpResponse << endl;
-								close(sockets[i]);
-								sockets[i] = 0;
-				    			flag = true;
-				    			break;
-							}
-						}
-						if(flag) continue;
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-			    		strcat(httpResponse, "1");
-					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						cout << httpResponse << endl;
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
-
-					//Format: "Remove {username} {number}"
-					//Return: "0"
-					else if(data.substr(0, 6) == "Remove") {
-						int sep = data.find(" ", 7);
-						name = data.substr(7, sep - 7);
-        				index = stoi(data.substr(sep + 1));
-
-						remove(((root/allUsername[index]/name).string() + ".txt").c_str());
-						filesystem::remove_all(root/allUsername[index]/name);
-
-						remove(((root/name/allUsername[index]).string() + ".txt").c_str());
-						filesystem::remove_all(root/name/allUsername[index]);
-
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-			    		strcat(httpResponse, "0");
-					    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						cout << httpResponse << endl;
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
-
-					//Format: "Chat {username} {number}"
-					//Return: Chat history
-					else if(data.substr(0, 4) == "Chat") {
-						int sep = data.find(" ", 5);
-						name = data.substr(5, sep - 5);
-        				index = stoi(data.substr(sep + 1));
-        				chattingFriend[index] = name;
-
-						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
-						file.seekg (0, ios::end);
-					    int length = file.tellg();
-					    cout << "len: " << length << endl;
-					    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
-						file.seekg(- chatBase[index], ios::end);
-						cout << chatBase[index] << endl;
-						cout << file.tellg() << endl;
-						memset(buff, '\0', buff_len);
-						file.read(buff, chatBase[index]);
-						file.close();
-						strcat(httpResponse, buff);
-						cout << "buff: " << buff << endl;
-						cout << "response: " << httpResponse << endl;
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
-
-					//Format: "More {number}"
-					//Return: More chat history
-					// else if(data.substr(0, 4) == "More") {
-     //    				index = stoi(data.substr(5));
-					// 	file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-					// 	strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
-					// 	chatBase[index] += buff_len - strlen(httpResponse);
-					// 	file.seekg(chatBase[index], ios::end);
-					// 	file.read(buff, buff_len - strlen(httpResponse));
-					// 	file.close();
-					// 	strcat(httpResponse, buff);
-				 //    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-					// 	close(sockets[i]);
-					// 	sockets[i] = 0;
-					// }
-
-					//Format: "Text{number} {plain text}"
-					//Return: "0"
-					else if(data.substr(0, 4) == "Text") {
-						index = stoi(data.substr(4, data.find("") - 4));
-						data = data.substr(data.find(" ") + 1);
-
-						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
-						file.write(("A: " + data + "\n").c_str(), data.size() + 4);
-						file.close();
-						chatBase[index] += data.size() + 4;
-
-						file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
-						file.write(("B: " + data + "\n").c_str(), data.size() + 4);
-						file.close();
-
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, "0");
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-
-				  //   	for(int m = 0; m < max_number_of_users; m++) {
-				  //   		if (username[m] == chattingFriend[i]) {
-				  //   			if(chattingFriend[m] == username[i]) {
-				  //   				send(sockets[m], data.c_str(), data.size(), MSG_NOSIGNAL);
-				  //   			}
-				  //   			break;
-				  //   		}
-				  //   	}
-					}
-
-					//Format: "FileName{number} {file name}"
-					//Return: "0"
-					else if(data.substr(0, 8) == "FileName") {						
-						index = stoi(data.substr(8, data.find(" ") - 8));
-						filename[index] = data.substr(data.find(" ") + 1);
-
-						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary);
-						file.close();
-
-						file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary);
-						file.close();
+	            		// contentLengthPos = httpRequest.find("Content-Length: ");
+	            		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
+						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 						
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, "0");
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
-
-					//Format: "FileImme{number} {data}"
-					//Return: "0"
-					else if(data.substr(0, 8) == "FileImme") {
-						// cout << "should be here" << endl;
-						index = stoi(data.substr(8, data.find(" ") - 8));
-						spacePos = data.find(" ");
-						data = data.substr(spacePos + 1);
+	            		//Format: "Login {username}"
+	            		//Return: user index
+						cout << "data.substr(0, 8): " << data.substr(0, 8) << endl;
 						cout << "data: " << data << endl;
-						// cout << "Length of data: " << data.length() << endl;
-						contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
-                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-						// cout << "contentLength: " << contentLength << endl;
-						// cout << "data.find: " << data.find(" ") << endl;
+						if(data.substr(0, 5) == "Login") {
+							name = data.substr(6);
+							int k;
+							cout << name << endl;
+							for(k = 0; k < allUsername.size(); k++) {
+								cout << "1" << endl;
+								if(allUsername[k] == name) {
+									cout << "2" << endl;
+					    			flag = true;
+								    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+					    			sprintf(httpResponse, "%s%d", httpResponse, k);
+									cout << httpResponse << endl;
+								    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+									close(sockets[i]);
+									sockets[i] = 0;
+					    			break;
+								}
+							}
+							if(flag) continue;
+							cout << "3" << endl;
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+			    			sprintf(httpResponse, "%s%d", httpResponse, k);
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+							cout << httpResponse << endl;
+			    			allUsername.push_back(name);
+							filesystem::create_directory(root/name);
+						}
 
-						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);
-						file.write(data.c_str(), contentLength - spacePos - 1);
-						file.close();
+						//Format: "List friends {number}"
+	            		//Return: all friends' names
+	        			else if(data.substr(0, 12) == "List friends") {
+	        				index = stoi(data.substr(13));
 
-						file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary|ios::app);
-						file.write(data.c_str(), contentLength - spacePos - 1);
-						file.close();
-						
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, "0");
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
+	    					for (const auto &n : filesystem::directory_iterator{root/allUsername[index]}) {
+								if(is_directory(n))
+									filelist.push_back(n.path().stem().string());
+							}
+						    sort(filelist.begin(), filelist.end());
+						    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						    for (const string &friendName : filelist) {
+						    	strcat(httpResponse, friendName.c_str());
+						    	strcat(httpResponse, "\n");
+						    	// cout << file.path().filename().string() << endl;
+						    }
+						    filelist.clear();
+							cout << httpResponse << endl;
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
 
-					//Format: "FileFinish {number}"
-					//Return: "0"
-					else if(data.substr(0, 8) == "FileFinish") {
-						index = stoi(data.substr(9));
-						file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
-						file.write(("FA: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
-						file.close();
-						chatBase[index] += filename[index].size() + 8;
+						//Format: "Add {username} {number}"
+						//Return: "0" | "1"
+						else if(data.substr(0, 3) == "Add") {
+							int sep = data.find(" ", 4);
+							name = data.substr(4, sep - 4);
+	        				index = stoi(data.substr(sep + 1));
 
-						file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
-						file.write(("FB: " + filename[index] + "\n").c_str(), filename[index].size() + 8);
-						file.close();
-						
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, "0");
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
+							for(auto &user : allUsername) {
+								if(user == name) {
+									file.open((root/allUsername[index]/name).string() + ".txt", ios::out|ios::binary|ios::app);
+				                	file.close();
+									filesystem::create_directory(root/allUsername[index]/name);
 
-						// strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						// strcat(httpResponse, "File finish");
-				  //   	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+									file.open((root/name/allUsername[index]).string() + ".txt", ios::out|ios::binary|ios::app);
+				                	file.close();
+									filesystem::create_directory(root/name/allUsername[index]);
 
-				  //   	for(int m = 0; m < max_number_of_users; m++) {
-				  //   		if (username[m] == chattingFriend[i]) {
-				  //   			if(chattingFriend[m] == username[i]) {
-				  //   				send(sockets[m], ("Filename " + filename[i]).c_str(), ("Filename " + filename[i]).size(), MSG_NOSIGNAL);
-				  //   			}
-				  //   			break;
-				  //   		}
-				  //   	}
-					}
+						    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						    		strcat(httpResponse, "0");
+								    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+									cout << httpResponse << endl;
+									close(sockets[i]);
+									sockets[i] = 0;
+					    			flag = true;
+					    			break;
+								}
+							}
+							if(flag) continue;
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+				    		strcat(httpResponse, "1");
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							cout << httpResponse << endl;
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
 
-					//Format: "Download{number} {filename}"
-					//Return: "filesize" (of no need)
-					else if(data.substr(0, 8) == "Download") {
-						index = stoi(data.substr(8, data.find(" ") - 8));
-						filename[index] = data.substr(data.find(" ") + 1);
-						base[index] = 0;
-						
-						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
-						file.seekg(0, ios::end);
-						file.close();
-						filesize[index] = file.tellg();
+						//Format: "Remove {username} {number}"
+						//Return: "0"
+						else if(data.substr(0, 6) == "Remove") {
+							int sep = data.find(" ", 7);
+							name = data.substr(7, sep - 7);
+	        				index = stoi(data.substr(sep + 1));
 
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						strcat(httpResponse, to_string(filesize[index]).c_str());
-				    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
+							remove(((root/allUsername[index]/name).string() + ".txt").c_str());
+							filesystem::remove_all(root/allUsername[index]/name);
 
-					//client should detect the last download
-					//Format: "DownloadImme{number}"
-					//Return: File content
-					else if(data.substr(0, 12) == "DownloadImme") {
-						index = stoi(data.substr(12));
+							remove(((root/name/allUsername[index]).string() + ".txt").c_str());
+							filesystem::remove_all(root/name/allUsername[index]);
 
-						strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-						int headerLength = strlen(httpResponse);
-						file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
-						file.seekg(base[index], ios::end);
-						memset(buff, '\0', buff_len);
-						int length = filesize[index] > base[index] + buff_len - strlen(httpResponse) ? buff_len - strlen(httpResponse) : filesize[index] - base[index];
-						file.read(buff, length);
-						file.close();
-						base[index] += length;
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+				    		strcat(httpResponse, "0");
+						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							cout << httpResponse << endl;
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
 
-						strcat(httpResponse, buff);
-				    	send(sockets[i], httpResponse, headerLength + length, MSG_NOSIGNAL);
-						close(sockets[i]);
-						sockets[i] = 0;
-					}
+						//Format: "Chat {username} {number}"
+						//Return: Chat history
+						else if(data.substr(0, 4) == "Chat") {
+							int sep = data.find(" ", 5);
+							name = data.substr(5, sep - 5);
+	        				index = stoi(data.substr(sep + 1));
+	        				chattingFriend[index] = name;
 
+							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
+							file.seekg (0, ios::end);
+						    int length = file.tellg();
+						    cout << "len: " << length << endl;
+						    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
+							file.seekg(- chatBase[index], ios::end);
+							cout << chatBase[index] << endl;
+							cout << file.tellg() << endl;
+							memset(buff, '\0', buff_len);
+							file.read(buff, chatBase[index]);
+							file.close();
+							strcat(httpResponse, buff);
+							cout << "buff: " << buff << endl;
+							cout << "response: " << httpResponse << endl;
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
+
+						//Format: "More {number}"
+						//Return: More chat history
+						// else if(data.substr(0, 4) == "More") {
+	     //    				index = stoi(data.substr(5));
+						// 	file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
+						// 	strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
+						// 	chatBase[index] += buff_len - strlen(httpResponse);
+						// 	file.seekg(chatBase[index], ios::end);
+						// 	file.read(buff, buff_len - strlen(httpResponse));
+						// 	file.close();
+						// 	strcat(httpResponse, buff);
+					 //    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+						// 	close(sockets[i]);
+						// 	sockets[i] = 0;
+						// }
+
+						//Format: "Text{number} {plain text}"
+						//Return: "0"
+						else if(data.substr(0, 4) == "Text") {
+							index = stoi(data.substr(4, data.find("") - 4));
+							data = data.substr(data.find(" ") + 1);
+
+							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::out|ios::app);
+							file.write(("A: " + data + "\n").c_str(), data.size() + 4);
+							file.close();
+							chatBase[index] += data.size() + 4;
+
+							file.open((root/chattingFriend[index]/allUsername[index]).string() + ".txt", ios::out|ios::app);
+							file.write(("B: " + data + "\n").c_str(), data.size() + 4);
+							file.close();
+
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, "0");
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+
+					  //   	for(int m = 0; m < max_number_of_users; m++) {
+					  //   		if (username[m] == chattingFriend[i]) {
+					  //   			if(chattingFriend[m] == username[i]) {
+					  //   				send(sockets[m], data.c_str(), data.size(), MSG_NOSIGNAL);
+					  //   			}
+					  //   			break;
+					  //   		}
+					  //   	}
+						}
+
+						//Format: "FileName{number} {file name}" (data size = 3000)
+						//Return: "0"
+						else if(data.substr(0, 8) == "FileName") {	
+							fileFlag = true;
+							headerLength = httpRequest.size() - data.size();
+
+							index = stoi(data.substr(8, data.find(" ") - 8));
+							filename[index] = data.substr(data.find(" ") + 1);
+
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary);
+							file.close();
+
+							file.open(root/chattingFriend[index]/allUsername[index]/filename[index], ios::out|ios::binary);
+							file.close();
+							
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, "0");
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
+
+						//Format: "Download{number} {filename}"
+						//Return: "filesize" (of no need)
+						else if(data.substr(0, 8) == "Download") {
+							index = stoi(data.substr(8, data.find(" ") - 8));
+							filename[index] = data.substr(data.find(" ") + 1);
+							base[index] = 0;
+							
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
+							file.seekg(0, ios::end);
+							file.close();
+							filesize[index] = file.tellg();
+
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							strcat(httpResponse, to_string(filesize[index]).c_str());
+					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
+
+						//client should detect the last download
+						//Format: "DownloadImme{number}"
+						//Return: File content
+						else if(data.substr(0, 12) == "DownloadImme") {
+							index = stoi(data.substr(12));
+
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+							headerLength = strlen(httpResponse);
+							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
+							file.seekg(base[index], ios::end);
+							memset(buff, '\0', buff_len);
+							int length = filesize[index] > base[index] + buff_len - strlen(httpResponse) ? buff_len - strlen(httpResponse) : filesize[index] - base[index];
+							file.read(buff, length);
+							file.close();
+							base[index] += length;
+
+							strcat(httpResponse, buff);
+					    	send(sockets[i], httpResponse, headerLength + length, MSG_NOSIGNAL);
+							close(sockets[i]);
+							sockets[i] = 0;
+						}
+                	}
+                }
+
+                
                 	// httpRequestLine = "";
                 	// for (int i = 0; i < strlen(httpRequest); ++i)
                 	// {
