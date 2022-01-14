@@ -445,6 +445,7 @@ function App() {
                                 
                                 let i = 0, j = 0;
                                 da = ""
+                                console.log(reader.result.length)
                                 while(i < reader.result.length){
                                   da += reader.result[i]
                                   i++; j++
