@@ -41,7 +41,7 @@ function App() {
 
   const bodyRef = useRef(null)
 
-  const MAX_SIZE_OF_MESSAGE = 3096;
+  const MAX_SIZE_OF_MESSAGE = 3000;
 
   const props = {
     name: 'file',
@@ -424,8 +424,7 @@ function App() {
 
                               reader.onload = () => {
                                 // console.log(reader.result)
-
-                                let da = `FileName${id} ${file.name}`
+                                let da = `FileName${id} ${file.name} ${}`
                                 let option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
@@ -454,7 +453,7 @@ function App() {
                                 while(i < reader.result.length){
                                   da += reader.result[i]
                                   i++; j++
-                                  if(j === MAX_SIZE_OF_MESSAGE){
+                                  if(j === MAX_SIZE_OF_MESSAGE - id.length - 9){
                                     console.log("here")
                                     option = {
                                       hostname: '127.0.0.1',
