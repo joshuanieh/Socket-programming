@@ -76,7 +76,7 @@ int main(int argc, char const *argv[]) {
         for(int i = 0; i < max_number_of_users; i++) {
             if(FD_ISSET(sockets[i], &readfds)) {
             	if(fileFlag) {
-            		if(recv(sockets[i], buff, headerLength + 3000, MSG_WAITALL) <= 0) {
+            		if(recv(sockets[i], buff, headerLength + 3000 + 2, MSG_WAITALL) <= 0) {
 	                    close(sockets[i]);
 	                    sockets[i] = 0;
 	                }
