@@ -500,8 +500,8 @@ function App() {
                                 // console.log(da)
                                 // req.end()
 
-
-                                da = `FileFinish${id} ${da.length + 9 + id.length} ${da}`
+                                da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 9 - id.length)
+                                da = `FileFinish${id} ${MAX_SIZE_OF_DATA} ${da}`
                                 option = {
                                   hostname: '127.0.0.1',
                                   port: 4000,
