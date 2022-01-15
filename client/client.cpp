@@ -18,10 +18,10 @@ using namespace std;
 int main(int argc, char const *argv[]) {
 	//declarations
 	char *ip;
-	char cnd[5];
+	char cnd[20];
 	long long filesize;
 	int port, pos, num;
-	string line, filename, command, name;
+	string line, filename, command, name, passwd, friendName;
 	fstream file;
 	streampos begin, end;
 	string fileroot = "./client_dir";
@@ -40,19 +40,25 @@ int main(int argc, char const *argv[]) {
 	addr.sin_addr.s_addr = inet_addr(ip);
 	addr.sin_port = htons(port);
 	connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
-	string httpHeader = "POST / HTTP/1.1\r\nContent-Length: ";//+ {number}/r/n/r/n{data}
-	//login
+	char httpRequest[] = "POST / HTTP/1.1\r\nContent-Length: ";//+ {number}/r/n/r/n{data}
+	string httpResponse, id;
 	
-	cout << "input your username:" << endl;
-	while(getline(cin, name)) {
-		sprintf(cnd, "logi");
-		send(client_fd, cnd, 5, MSG_NOSIGNAL);
-		send(client_fd, name.c_str(), buff_len, MSG_NOSIGNAL);
+	//login
+	while(true){
+		cout << "input your username: " << endl;
+		getline(cin, name);
+		cout << "input your password: " << endl;
+		getline(cin, passwd);
+		sprintf(cnd, "%d/r/n/r/nLogin%s %s", name.size() + passwd.size() + 6, name, passwd);
+		strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+		strcat(httpRequest, cnd);
+		send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
 		recv(client_fd, buff, buff_len, MSG_WAITALL);
-		cout << buff << endl;
-		if(strcmp(buff, "connect successfully") == 0) break;
+		httpResponse = buff;
+		id = httpResponse.substr(51, string::npos);
+		cout << id << endl;
+		if(id != "x") break;
 	}
-	//todo: account system
 
 	//menu
 	cout << "Home" << endl;
@@ -67,10 +73,48 @@ int main(int argc, char const *argv[]) {
 		switch(num) {
 			//List all friends
 			case 1: {
-				sprintf(cnd, "lsaf");
-				send(client_fd, cnd, 5, MSG_NOSIGNAL);
+				sprintf(cnd, "%d/r/n/r/nList friends %s", id.size() + 13, id);
+				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+				strcat(httpRequest, cnd);
+				send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
 				recv(client_fd, buff, buff_len, MSG_WAITALL);
-				cout << buff;
+				httpResponse = buff;
+				cout << httpResponse.substr(51, string::npos);
+				break;
+			}
+			case 2: {
+				cout << "input a username: " << endl;
+				getline(cin, friendName);
+				sprintf(cnd, "%d/r/n/r/nAdd %s %s", friendName.size() + id.size() + 5, friendName, id);
+				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+				strcat(httpRequest, cnd);
+				send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
+				recv(client_fd, buff, buff_len, MSG_WAITALL);
+				httpResponse = buff;
+				if(httpResponse.substr(51, string::npos) == "0"){
+					cout << "added successfully" << endl;
+				}
+				else if(httpResponse.substr(51, string::npos) == "1"){
+					cout << "no user found" << endl;
+				}
+				break;
+			}
+			case 3: {
+				cout << "input a username: " << endl;
+				getline(cin, friendName);
+				sprintf(cnd, "%d/r/n/r/nAdd %s %s", friendName.size() + id.size() + 5, friendName, id);
+				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+				strcat(httpRequest, cnd);
+				send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
+				recv(client_fd, buff, buff_len, MSG_WAITALL);
+				httpResponse = buff;
+				if(httpResponse.substr(51, string::npos) == "0"){
+					cout << "added successfully" << endl;
+				}
+				else if(httpResponse.substr(51, string::npos) == "1"){
+					cout << "no user found" << endl;
+				}
+				break;
 			}
 			case 4: {
 				while(true) {
