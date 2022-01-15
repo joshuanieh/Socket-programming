@@ -1,17 +1,17 @@
 const http = require('http');
 const fs = require('fs');
- 
+
+fs.mkdir('./client_dir', (err) => {
+    // console.log(err)
+})
+
 const server = http.createServer((req, res) => {
     req.on('data', (msg) => {
         let message = msg.toString('utf8')
-        // console.log(message)
+        console.log(msg)
         let fileName = message.substr(0, message.indexOf(' '))
         let content = message.substr(message.indexOf(' ') + 1)
-
-        fs.mkdir('./client_dir', (err) => {
-            console.log(err)
-        })
-        
+        // console.log(content)
         fs.writeFile(`./client_dir/${fileName}`, content, (err) => {
             console.log(err)
         })

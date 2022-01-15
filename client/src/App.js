@@ -25,71 +25,85 @@ function App() {
 
   const [fileLength, setFileLength] = useState(0)
   const [fileName, setFileName] = useState("")
+  const [downloadOK, setDownloadOK] = useState(false)
+  const [fileString, setFileString] = useState("")
 
   useEffect(() => {
     if(chatting){
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight
     }
     if(fileLength > 0 && fileName !== "") {
-        while(true){
-          let da = `DownloadImme${id}`
-          // da += reader.result[i]
-          // i++; j++
-          let option = {
-            hostname: cppHostName,
-            port: 4000,
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain',
-              'Content-Length': da.length
-            }
-          }
-          let req = http.request(option, res => {
-            // console.log(`statusCode: ${res.statusCode}`)
-            res.on('data', d => {
-              // console.log(d)
-              fileString = ""
-              for(var i=0; i<d.length; i++){
-                fileString += String.fromCharCode(d[i])
-              }
-              console.log(fileString)
-              console.log(fileString.length)
-
-              let _option = {
-                hostname: jsHostName,
-                port: 5000,
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'text/plain',
-                  'Content-Length': fileString.length
-                }
-              }
-
-              let _req = http.request(_option, _res => {
-                console.log(_res)
-              })
-              _req.on('error', error => {
-                console.error(error)
-              })
-              _req.write(`${fileName.slice(4)} ${fileString}`);
-              console.log(fileName.slice(4))
-              _req.end()
-            })
-          })
-          req.on('error', error => {
-            console.error(error)
-          })
-          req.write(da);
-          req.end()
-          setFileLength(fileLength - 4045)
-          // j = 0
-          // da = ""
-          if (fileLength < 0) {
-            setFileName("")
-            break
+      let j = 1
+      while(true){
+        let da = `DownloadImme${id}`
+        // da += reader.result[i]
+        // i++; j++
+        let option = {
+          hostname: cppHostName,
+          port: 4000,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            'Content-Length': da.length
           }
         }
+        let req = http.request(option, res => {
+          // console.log(`statusCode: ${res.statusCode}`)
+          res.on('data', d => {
+            setFileString(d.toString('utf8'))
+            // console.log(d)
+            // for(var i=0; i<d.length; i++){
+            //   fileString += String.fromCharCode(d[i])
+            // }
+            // console.log(fileString)
+            // console.log(fileString.length)
+          })
+        })
+        req.on('error', error => {
+          console.error(error)
+        })
+        req.write(da);
+        req.end()
+        // j = 0
+        // da = ""
+        if (fileLength - 4045 * j < 0) {
+          setFileLength(0)
+          break
+        }
+        else {
+          j++
+        }
       }
+    }
+    
+    if(!downloadOK && fileLength === 0) {
+      setFileName("")
+    }
+  })
+
+  useEffect(() => {
+    if(fileString !== "") {
+      let _option = {
+        hostname: jsHostName,
+        port: 5000,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+          'Content-Length': fileString.length
+        }
+      }
+      console.log("h")
+      let _req = http.request(_option, _res => {
+        console.log(_res)
+        setFileString("")
+      })
+      _req.on('error', error => {
+        console.error(error)
+      })
+      _req.write(`${fileName.slice(4)} ${fileString}`);
+      console.log(fileName.slice(4))
+      _req.end()
+    }
   })
 
   const bodyRef = useRef(null)
@@ -120,7 +134,7 @@ function App() {
       }
     }
   }
-  let friendString = "", messageString = "", fileString = ""
+  let friendString = "", messageString = ""
 
   return (
     <div className="App">
