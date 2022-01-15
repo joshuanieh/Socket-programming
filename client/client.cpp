@@ -12,7 +12,7 @@
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
-#define buff_len 512
+#define buff_len 4096
 using namespace std;
 
 int main(int argc, char const *argv[]) {
@@ -42,6 +42,7 @@ int main(int argc, char const *argv[]) {
 	connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
 	
 	//login
+	
 	cout << "input your username:" << endl;
 	while(getline(cin, name)) {
 		sprintf(cnd, "logi");
