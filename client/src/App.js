@@ -24,7 +24,6 @@ function App() {
   const [chatting, setChatting] = useState(false)
 
   const [fileLength, setFileLength] = useState(0)
-  const [fileName, setFileName] = useState("")
   const [downloadOK, setDownloadOK] = useState(false)
   const [fileString, setFileString] = useState("")
 
@@ -32,7 +31,7 @@ function App() {
     if(chatting){
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight
     }
-    if(fileLength > 0 && fileName !== "") {
+    if(fileLength > 0) {
       let j = 1
       while(true){
         let da = `DownloadImme${id}`
@@ -75,10 +74,6 @@ function App() {
         }
       }
     }
-    
-    if(!downloadOK && fileLength === 0) {
-      setFileName("")
-    }
   })
 
   useEffect(() => {
@@ -92,7 +87,6 @@ function App() {
           'Content-Length': fileString.length
         }
       }
-      console.log("h")
       let _req = http.request(_option, _res => {
         console.log(_res)
         setFileString("")
@@ -100,8 +94,7 @@ function App() {
       _req.on('error', error => {
         console.error(error)
       })
-      _req.write(`${fileName.slice(4)} ${fileString}`);
-      console.log(fileName.slice(4))
+      _req.write(`${fileString}`);
       _req.end()
     }
   })
@@ -400,7 +393,6 @@ function App() {
                                       ) : (
                                         <p key={i} align="right">
                                         <Tag color="#096dd9" onClick={() => {
-                                          setFileName(e)
                                           let da = `Download${id} ${e.slice(4)}`
                                           let option = {
                                             hostname: cppHostName,
@@ -424,6 +416,23 @@ function App() {
                                           req.write(da)
                                           req.end()
 
+                                          let _option = {
+                                            hostname: jsHostName,
+                                            port: 5000,
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'text/plain',
+                                              'Content-Length': e.slice(4).length
+                                            }
+                                          }
+                                          let _req = http.request(_option, _res => {
+                                            console.log(_res)
+                                          })
+                                          _req.on('error', error => {
+                                            console.error(error)
+                                          })
+                                          _req.write(`FileName ${e.slice(4)}`);
+                                          _req.end()
                                         }}>{e.slice(4)}</Tag>
                                       </p> 
                                         )

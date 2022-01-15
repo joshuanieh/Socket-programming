@@ -1,18 +1,20 @@
 const http = require('http');
 const fs = require('fs');
 
+let message, fileName
+
+
 fs.mkdir('./client_dir', (err) => {
-    console.log(err)
 })
 
 const server = http.createServer((req, res) => {
     req.on('data', (msg) => {
-        let message = msg.toString('utf8')
+        message = msg.toString('utf8')
         console.log(msg)
-        if(msg.slice(0, 8) === 'FileName'){
+        if(message.slice(0, 8) === 'FileName'){
             fileName = message.substr(8)
             console.log(fileName)
-            fs.unlink(`./client_dir/${filename}`, (err) => {
+            fs.unlink(`./client_dir/${fileName}`, (err) => {
                 console.log(err)
             });
         }
