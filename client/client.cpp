@@ -101,22 +101,12 @@ int main(int argc, char const *argv[]) {
 			case 3: {
 				cout << "input a username: " << endl;
 				getline(cin, friendName);
-				sprintf(cnd, "%d/r/n/r/nAdd %s %s", friendName.size() + id.size() + 5, friendName, id);
+				sprintf(cnd, "%d\r\n\r\nRemove %s %s", friendName.size() + id.size() + 8, friendName, id);
 				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 				strcat(httpRequest, cnd);
 				send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
 				recv(client_fd, buff, buff_len, MSG_WAITALL);
-				httpResponse = buff;
-				if(httpResponse.substr(51, string::npos) == "0"){
-					cout << "added successfully" << endl;
-				}
-				else if(httpResponse.substr(51, string::npos) == "1"){
-					cout << "no user found" << endl;
-				}
-				break;
 			}
-			case 2: {}
-			case 3: {}
 			case 4: {
 				while(true) {
 					cout << "Choose a friend: (or \"quit\" to return)" << endl;
@@ -125,7 +115,7 @@ int main(int argc, char const *argv[]) {
 					if(name == "quit") break;
 					line = "Chat " + name + " " + id;
 					strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
-					strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+					strcat(httpRequest, to_string(line.size()) + "\r\n\r\n" + line);
 					send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 					recv(client_fd, buff, buff_len, MSG_WAITALL);
 					httpResponse = buff;
@@ -149,7 +139,7 @@ int main(int argc, char const *argv[]) {
 								if(file.is_open()) {
 									line = "FileName" + id + " " + filename;
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
-									strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+									strcat(httpRequest, to_string(line.size()) + "\r\n\r\n" + line);
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									
 									while(file.peek() != EOF) {
@@ -158,12 +148,12 @@ int main(int argc, char const *argv[]) {
 										file.read(buff, 3000 - line.size());
 										if(strlen(buff) != 3000 - line.size()) break;
 										line += buff;
-										strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+										strcat(httpRequest, to_string(line.size()) + "\r\n\r\n" + line);
 										send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									}
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 									line = "FileFinish" + id + " " + to_string(strlen(buff)) + " " + buff;
-									strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+									strcat(httpRequest, to_string(line.size()) + "\r\n\r\n" + line);
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									file.close();
 									cout << "upload " << filename << " successfully" << endl;
@@ -178,7 +168,7 @@ int main(int argc, char const *argv[]) {
 								filename = line.substr(pos + 1);
 								line = "Download" + id + " " + filename;
 								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
-								strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+								strcat(httpRequest, to_string(line.size()) + "\r\n\r\n" + line);
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								
 								if(strcmp(buff, "The file exists.") != 0) {
