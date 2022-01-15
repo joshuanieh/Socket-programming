@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <vector>
+#include <unordered_map>
 
 #define socket_domain AF_INET
 #define socket_type SOCK_STREAM
@@ -21,20 +22,25 @@
 using namespace std;
 
 int main(int argc, char const *argv[]) {
-	string httpRequest, fileroot = "./public", name;
+	string httpRequest, fileroot = "./public", name, pass;
 	const filesystem::path root{fileroot};
 	vector<string> filelist, allUsername;
-	string chattingFriend[max_number_of_users_in_database], filename[max_number_of_users_in_database];
+	string chattingFriend[max_number_of_users_in_database], filename[max_number_of_users_in_database], password[max_number_of_users_in_database];
 	int filesize[max_number_of_users_in_database], headerLength;
 	for (const auto &n : filesystem::directory_iterator{root}) {
 		if (n.is_directory())
             allUsername.push_back(n.path().stem().string());
 	}
+	unordered_map <string, string> userPasswordPairs;
+	fstream file;
+	file.open("./password.txt", ios::in);
+	while(file >> name >> pass) userPasswordPairs[name] = pass;
+	file.close();
+
 	streampos begin, end;
 	streampos base[max_number_of_users_in_database], chatBase[max_number_of_users_in_database];
 	bool flag, fileFlag = false;
 	int o = true, j, index;
-	fstream file;
 	// long long filesize[max_number_of_users];
 	char buff[buff_len], c, httpResponse[buff_len];
 	string data;
@@ -203,19 +209,23 @@ int main(int argc, char const *argv[]) {
 	            		// contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
 						data = httpRequest.substr(httpRequest.find("\r\n\r\n") + 4);
 						
-	            		//Format: "Login {username}"
-	            		//Return: user index
+	            		//Format: "Login{username} {password}"
+	            		//Return: user index or 'x'
 						if(data.substr(0, 5) == "Login") {
-							name = data.substr(6);
+							name = data.substr(6, data.find(" ") - 6);
+							pass = data.substr(data.find(" ") + 1);
 							int k;
 							cout << name << endl;
 							for(k = 0; k < allUsername.size(); k++) {
-								cout << "1" << endl;
 								if(allUsername[k] == name) {
-									cout << "2" << endl;
 					    			flag = true;
-								    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-					    			sprintf(httpResponse, "%s%d", httpResponse, k);
+					    			if(userPasswordPairs[name] != pass) {
+										strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\nx");
+									}
+									else {
+									    strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+						    			sprintf(httpResponse, "%s%d", httpResponse, k);
+									}
 									cout << httpResponse << endl;
 								    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 									close(sockets[i]);
@@ -224,7 +234,6 @@ int main(int argc, char const *argv[]) {
 								}
 							}
 							if(flag) continue;
-							cout << "3" << endl;
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 			    			sprintf(httpResponse, "%s%d", httpResponse, k);
 						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
@@ -232,6 +241,7 @@ int main(int argc, char const *argv[]) {
 							sockets[i] = 0;
 							cout << httpResponse << endl;
 			    			allUsername.push_back(name);
+			    			userPasswordPairs[name] = pass;
 							filesystem::create_directory(root/name);
 						}
 
