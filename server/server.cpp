@@ -128,8 +128,7 @@ int main(int argc, char const *argv[]) {
 							file.write(data.c_str(), contentLength - sep - 1);
 							file.close();
 							
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-							strcat(httpResponse, "0");
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0");
 					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							
 							close(sockets[i]);
@@ -165,8 +164,7 @@ int main(int argc, char const *argv[]) {
 							file.write(("FB: " + filename[index] + "\n").c_str(), filename[index].size() + 5);
 							file.close();
 							
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-							strcat(httpResponse, "0");
+							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0");
 					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							
 							close(sockets[i]);
@@ -338,21 +336,27 @@ int main(int argc, char const *argv[]) {
 	        				chattingFriend[index] = name;
 
 							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0\n");
-							file.seekg (0, ios::end);
-						    int length = file.tellg();
-						    cout << "len: " << length << endl;
-						    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
-							file.seekg(length - chatBase[index], ios::beg);
-							cout << chatBase[index] << endl;
-							cout << file.tellg() << endl;
-							memset(buff, '\0', buff_len);
-							file.read(buff, chatBase[index]);
-							file.close();
-							strcat(httpResponse, buff);
-							cout << "buff: " << buff << endl;
-							cout << "response: " << httpResponse << endl;
-					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
+							if (file.is_open()) {
+								strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0");
+								file.seekg (0, ios::end);
+							    int length = file.tellg();
+							    cout << "len: " << length << endl;
+							    chatBase[index] = (buff_len - strlen(httpResponse)) > length ? length : (buff_len - strlen(httpResponse));
+								file.seekg(length - chatBase[index], ios::beg);
+								cout << chatBase[index] << endl;
+								cout << file.tellg() << endl;
+								memset(buff, '\0', buff_len);
+								file.read(buff, chatBase[index]);
+								file.close();
+								strcat(httpResponse, buff);
+								cout << "buff: " << buff << endl;
+								cout << "response: " << httpResponse << endl;
+							}
+					    	else {
+					    		strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n1");
+								
+							}
+							send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							close(sockets[i]);
 							sockets[i] = 0;
 						}
@@ -459,12 +463,17 @@ int main(int argc, char const *argv[]) {
 							base[index] = 0;
 							
 							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::in|ios::binary);
-							file.seekg(0, ios::end);
-							filesize[index] = file.tellg();
-							file.close();
+							if(file.is_open()) {
+								file.seekg(0, ios::end);
+								filesize[index] = file.tellg();
+								file.close();
 
-							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-							strcat(httpResponse, to_string(filesize[index]).c_str());
+								strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
+								strcat(httpResponse, to_string(filesize[index]).c_str());
+							}
+							else {
+								strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\nx");
+							}
 					    	send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							close(sockets[i]);
 							sockets[i] = 0;

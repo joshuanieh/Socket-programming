@@ -57,8 +57,8 @@ int main(int argc, char const *argv[]) {
 	//menu
 	cout << "Home" << endl;
 	cout << "(1) List all friends" << endl;
-	cout << "(2) Add friend" << endl;
-	cout << "(3) Delete friend" << endl;
+	cout << "(2) Add a friend" << endl;
+	cout << "(3) Delete a friend" << endl;
 	cout << "(4) Choose a chat room" << endl;
 
 	while (true) {
@@ -136,28 +136,35 @@ int main(int argc, char const *argv[]) {
 								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 								strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
-								
-								if(strcmp(buff, "The file exists.") != 0) {
+								recv(client_fd, buff, buff_len, MSG_WAITALL);
+								if(strcmp(buff, "x") == 0) {
 									cout << "The " << filename << " doesn't exist" << endl;
 									continue;
 								}
-								recv(client_fd, buff, buff_len, MSG_WAITALL);
 								filesize = atoll(buff);
 								file.open(root/filename, ios::out|ios::binary);
 								file.close();
 								for(long long l = 0; l < (filesize/buff_len); l++) {
-									sprintf(cnd, "geti");
-									send(client_fd, cnd, 5, MSG_NOSIGNAL);
+									line = "DownloadImme" + id;
+									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+									strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									recv(client_fd, buff, buff_len, MSG_WAITALL);
+									httpResponse = buff;
+									line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 									file.open(root/filename, ios::app|ios::out|ios::binary);
-									file.write(buff, 4045);
+									file.write(line.c_str(), 4045);
 									file.close();
 								}
-								sprintf(cnd, "geti");
-								send(client_fd, cnd, 5, MSG_NOSIGNAL);
+								line = "DownloadImme" + id;
+								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+								strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								recv(client_fd, buff, buff_len, MSG_WAITALL);
+								httpResponse = buff;
+								line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 								file.open(root/filename, ios::app|ios::out|ios::binary);
-								file.write(buff, filesize%buff_len);
+								file.write(line.c_str(), 4045);
 								file.close();
 								cout << "get " << filename << " successfully" << endl;
 							}
