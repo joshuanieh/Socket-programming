@@ -40,7 +40,7 @@ int main(int argc, char const *argv[]) {
 	addr.sin_addr.s_addr = inet_addr(ip);
 	addr.sin_port = htons(port);
 	connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
-	
+	string httpHeader = "POST / HTTP/1.1\r\nContent-Length: ";//+ {number}/r/n/r/n{data}
 	//login
 	
 	cout << "input your username:" << endl;
