@@ -69,7 +69,6 @@ int main(int argc, char const *argv[]) {
 
 	while (true) {
 		cin >> num;
-		getline(cin, line);
 		switch(num) {
 			//List all friends
 			case 1: {
@@ -116,84 +115,100 @@ int main(int argc, char const *argv[]) {
 				}
 				break;
 			}
+			case 2: {}
+			case 3: {}
 			case 4: {
 				while(true) {
-					getline(cin, line);
-					pos = line.find(" ");
-					command = line.substr(0, pos);
-					if(command == "ls") {
-						if(pos != string::npos) {
-							cout << "Command format error" << endl;
-							continue;
-						}
-						sprintf(cnd, "lsss");
-						send(client_fd, cnd, 5, MSG_NOSIGNAL);
-						recv(client_fd, buff, buff_len, MSG_WAITALL);
-						cout << buff;
-					}
-					else if(command == "put") {
-						if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
-							cout << "Command format error" << endl;
-							continue;
-						}
-						filename = line.substr(pos + 1);
-					    file.open(root/filename, ios::in|ios::binary);
-						if(file.is_open()) {
-							begin = file.tellg();
-							file.seekg(0, ios::end);
-							end = file.tellg();
-							sprintf(cnd, "putt");
-							send(client_fd, cnd, 5, MSG_NOSIGNAL);
-							send(client_fd, filename.c_str(), buff_len, MSG_NOSIGNAL);
-							send(client_fd, to_string(end - begin).c_str(), buff_len, MSG_NOSIGNAL);
-							file.seekg(0, ios::beg);
-							while(file.peek() != EOF) {
-								sprintf(cnd, "puti");
-								send(client_fd, cnd, 5, MSG_NOSIGNAL);
-								file.read(buff, buff_len);
-								send(client_fd, buff, buff_len, MSG_NOSIGNAL);
-							}
-							file.close();
-							cout << "put " << filename << " successfully" << endl;
-						}
-					  	else cout << "The " << filename << " doesn't exist" << endl;
-					}
-					else if(command == "get") {
-						if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
-							cout << "Command format error" << endl;
-							continue;
-						}
-						filename = line.substr(pos + 1);
-						sprintf(cnd, "gett");
-						send(client_fd, cnd, 5, MSG_NOSIGNAL);
-						send(client_fd, filename.c_str(), buff_len, MSG_NOSIGNAL);
-						recv(client_fd, buff, buff_len, MSG_WAITALL);;
-						if(strcmp(buff, "The file exists.") != 0) {
-							cout << "The " << filename << " doesn't exist" << endl;
-							continue;
-						}
-						recv(client_fd, buff, buff_len, MSG_WAITALL);
-						filesize = atoll(buff);
-						file.open(root/filename, ios::out|ios::binary);
-						file.close();
-						for(long long l = 0; l < (filesize/buff_len); l++) {
-							sprintf(cnd, "geti");
-							send(client_fd, cnd, 5, MSG_NOSIGNAL);
-							recv(client_fd, buff, buff_len, MSG_WAITALL);
-							file.open(root/filename, ios::app|ios::out|ios::binary);
-							file.write(buff, buff_len);
-							file.close();
-						}
-						sprintf(cnd, "geti");
-						send(client_fd, cnd, 5, MSG_NOSIGNAL);
-						recv(client_fd, buff, buff_len, MSG_WAITALL);
-						file.open(root/filename, ios::app|ios::out|ios::binary);
-						file.write(buff, filesize%buff_len);
-						file.close();
-						cout << "get " << filename << " successfully" << endl;
+					cout << "Choose a friend: (or \"quit\" to return)" << endl;
+					cout << "Name: ";
+					getline(cin, name);
+					if(name == "quit") break;
+					line = "Chat " + name + " " + id;
+					strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+					strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+					send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+					recv(client_fd, buff, buff_len, MSG_WAITALL);
+					httpResponse = buff;
+					if (httpResponse.substr(httpResponse.find("\r\n\r\n") + 4)[0] === '1') {
+						cout << "invalid friend name" << endl;
 					}
 					else {
-						cout << "Command not found" << endl;
+						cout << "Please type \"Text ...\" or \"Download ...\" or \"Upload ...\" (or \"quit\" to return)" << endl;
+						while(true) {
+							getline(cin, line);
+							pos = line.find(" ");
+							command = line.substr(0, pos);
+							if(command == "quit") break;
+							else if(command == "Upload") {
+								if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
+									cout << "Command format error" << endl;
+									continue;
+								}
+								filename = line.substr(pos + 1);
+							    file.open(root/filename, ios::in|ios::binary);
+								if(file.is_open()) {
+									line = "FileName" + id + " " + filename;
+									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+									strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+									
+									while(file.peek() != EOF) {
+										strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+										line = "FileImme" + id + " ";
+										file.read(buff, 3000 - line.size());
+										if(strlen(buff) != 3000 - line.size()) break;
+										line += buff;
+										strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+										send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+									}
+									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+									line = "FileFinish" + id + " " + to_string(strlen(buff)) + " " + buff;
+									strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+									file.close();
+									cout << "upload " << filename << " successfully" << endl;
+								}
+							  	else cout << "The " << filename << " doesn't exist" << endl;
+							}
+							else if(command == "Download") {
+								if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
+									cout << "Command format error" << endl;
+									continue;
+								}
+								filename = line.substr(pos + 1);
+								line = "Download" + id + " " + filename;
+								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+								strcat(httpRequest, to_string(line,size()) + "\r\n\r\n" + line);
+								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+								
+								if(strcmp(buff, "The file exists.") != 0) {
+									cout << "The " << filename << " doesn't exist" << endl;
+									continue;
+								}
+								recv(client_fd, buff, buff_len, MSG_WAITALL);
+								filesize = atoll(buff);
+								file.open(root/filename, ios::out|ios::binary);
+								file.close();
+								for(long long l = 0; l < (filesize/buff_len); l++) {
+									sprintf(cnd, "geti");
+									send(client_fd, cnd, 5, MSG_NOSIGNAL);
+									recv(client_fd, buff, buff_len, MSG_WAITALL);
+									file.open(root/filename, ios::app|ios::out|ios::binary);
+									file.write(buff, 4045);
+									file.close();
+								}
+								sprintf(cnd, "geti");
+								send(client_fd, cnd, 5, MSG_NOSIGNAL);
+								recv(client_fd, buff, buff_len, MSG_WAITALL);
+								file.open(root/filename, ios::app|ios::out|ios::binary);
+								file.write(buff, filesize%buff_len);
+								file.close();
+								cout << "get " << filename << " successfully" << endl;
+							}
+							else {
+								cout << "Command not found" << endl;
+							}
+						}
 					}
 				}
 			}
