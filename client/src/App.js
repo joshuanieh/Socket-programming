@@ -24,7 +24,6 @@ function App() {
   const [chatting, setChatting] = useState(false)
 
   const [fileLength, setFileLength] = useState(0)
-  const [downloadOK, setDownloadOK] = useState(false)
   const [fileString, setFileString] = useState("")
 
   useEffect(() => {
@@ -106,7 +105,6 @@ function App() {
   const cppHostName = '127.0.0.1'
   const jsHostName = '127.0.0.1'
   const MAX_SIZE_OF_DATA = 3000;
-  const SERVER_BUF_SIZE = 4096;
   const displayStatus = (s) => {
     if (s.msg) {
       const { type, msg } = s
@@ -136,17 +134,22 @@ function App() {
         // login page
         <> 
           <div className="App-title">
-            <h1>Login</h1>
+            <h1>Login/Register</h1>
           </div>
-          <Input.Search
+          <Input
             placeholder="Please enter a username:"
-            enterButton="Continue"
             style={{ marginBottom: 10 }}
             onChange={(e) => setUsername(e.target.value)}
-            onSearch={(userName) => {
-              if(userName) {
+          ></Input>
+          <Input.Search
+            type="password"
+            placeholder="Please enter a password:"
+            enterButton="Continue"
+            style={{ marginBottom: 10 }}
+            onSearch={(passwd) => {
+              if(username && passwd) {
                 ////////////////////////// sendMessage(`Login {username}`)
-                const data = `Login ${userName}`
+                const data = `Login${username} ${passwd}`
                 const option = {
                   hostname: cppHostName,
                   port: 4000,
@@ -160,7 +163,20 @@ function App() {
                   // console.log(`statusCode: ${res.statusCode}`)
                   res.on('data', d => {
                     // console.log(d)
-                    setID(d);
+                    if(d[0] === 'x'){
+                      displayStatus({
+                        type: 'error',
+                        msg: 'Logged in failed'
+                      })
+                    }
+                    else {
+                      setID(d);
+                      displayStatus({
+                        type: 'success',
+                        msg: 'Logged in sucessfully'
+                      })
+                      setOptions(true)
+                    }
                   })
                 })
                 req.on('error', error => {
@@ -168,16 +184,11 @@ function App() {
                 })
                 req.write(data)
                 req.end()
-                displayStatus({
-                  type: 'success',
-                  msg: 'Logged in sucessfully'
-                })
-                setOptions(true)
               }
               else {
                 displayStatus({
                   type: 'error',
-                  msg: 'Please enter a username.'
+                  msg: 'Please enter a username and a password.'
                 })
               } 
             }}>
