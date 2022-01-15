@@ -236,7 +236,7 @@ int main(int argc, char const *argv[]) {
 							if(flag) continue;
 							file.open("./password.txt", ios::app);
 							string line = name + " " + pass + "\n";
-							file.write(line);
+							file.write(line.c_str(), name.size() + pass.size() + 2);
 							file.close();
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 			    			sprintf(httpResponse, "%s%d", httpResponse, k);
