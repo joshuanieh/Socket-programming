@@ -85,6 +85,7 @@ int main(int argc, char const *argv[]) {
 	                	
 	                	flag = false;
 	                	httpRequest = buff;
+						cout << "buffer!!: " << buff << endl;
 	                	// print out http request
 	                	// for (int i = 0; i < httpRequest.size(); ++i) {
 	                	// 	if(httpRequest[i] == '\r') cout << "\\r";
@@ -110,7 +111,7 @@ int main(int argc, char const *argv[]) {
 							// cout << "Length of data: " << data.length() << endl;
 							contentLengthPos = httpRequest.find("Content-Length: ");//For binary file
 	                		contentLength = stoi(httpRequest.substr(contentLengthPos + 16, httpRequest.find("\r\n", contentLengthPos + 16) - contentLengthPos - 16));
-							// cout << "contentLength: " << contentLength << endl;
+							cout << "contentLength: " << contentLength << endl;
 							// cout << "data.find: " << data.find(" ") << endl;
 
 							file.open(root/allUsername[index]/chattingFriend[index]/filename[index], ios::out|ios::binary|ios::app);

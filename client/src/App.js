@@ -77,6 +77,7 @@ function App() {
   })
 
   useEffect(() => {
+    console.log(fileString)
     if(fileString !== "") {
       let _option = {
         hostname: jsHostName,
@@ -97,7 +98,7 @@ function App() {
       _req.write(`${fileString}`);
       _req.end()
     }
-  })
+  }, [fileString])
 
   const bodyRef = useRef(null)
 
@@ -387,11 +388,7 @@ function App() {
                                         <Tag color="#95de64">{e.slice(3)}</Tag>
                                       </p>
                                     ) : ( e[1] === 'A' ? (
-                                      e.slice(-3) === 'png' || e.slice(-3) === 'jpg' ? (
-                                        <img src="//127.0.0.1/home/jimmy/Documents/03_EE_j1/03_計算機網路/Socket-programming/server/client_dir/logo192.png" alt="enter image description here"></img>
-                                        // <img key={i} src="/client_dir/logo192.png" alt=""></img>
-                                      ) : (
-                                        <p key={i} align="right">
+                                      <p key={i} align="right">
                                         <Tag color="#096dd9" onClick={() => {
                                           let da = `Download${id} ${e.slice(4)}`
                                           let option = {
@@ -435,7 +432,6 @@ function App() {
                                           _req.end()
                                         }}>{e.slice(4)}</Tag>
                                       </p> 
-                                        )
                                       ) : (
                                         e.slice(-3) === 'png' || e.slice(-3) === 'jpg' ? (
                                           <img src="" alt=""></img>
@@ -640,7 +636,7 @@ function App() {
                                   req.end()
                                   setMessagesList([...messagesList, `FA: ${file.name}`])
                                 };
-                                reader.readAsBinaryString(file);
+                                reader.readAsArrayBuffer(file);
 
                                 // Prevent upload
                                 return false;

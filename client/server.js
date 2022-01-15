@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => {
         message = msg.toString('utf8')
         console.log(msg)
         if(message.slice(0, 8) === 'FileName'){
-            fileName = message.substr(8)
+            fileName = message.substr(9)
             console.log(fileName)
             fs.unlink(`./client_dir/${fileName}`, (err) => {
                 console.log(err)
