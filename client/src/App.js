@@ -7,7 +7,6 @@ const http = require('http');
 function App() {
 
 // hooks
-  console.log(process.argv.slice(2))
   const [id, setID] = useState(0)
   const [username, setUsername] = useState('')
 
@@ -83,7 +82,7 @@ function App() {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'text/plain',
-                    'Content-Length': da.length,
+                    // 'Content-Length': da.length,
                   }
                 }
                 const req = http.request(option, res => {
@@ -115,298 +114,211 @@ function App() {
         </> 
         : 
         <>
-        {listFriends ?
-          // list friends page
-          <>
-            <div className="App-title">
-              <h1>All friends</h1>
-            </div>
-            <div>
-              {friends.map((e, i) => (
-                <p className="App-message" key={i}>
-                  <Tag color="blue">{e}</Tag>
-                </p>
-              ))}
-            </div>
-            <Button type="primary" danger onClick={() => {setListFriends(false)}}>
-              Leave
-            </Button>
-          </>
-          : 
-          <>
-            {addFriend ? 
-              // add friend page
-              <>
-                <div className="App-title">
-                  <h1>Add friends</h1>
-                </div>
-                <Input.Search
-                  placeholder="Please enter a username:"
-                  enterButton="Add"
-                  style={{ marginBottom: 10 }}
-                  // onChange={(e) => setUsername(e.target.value)}
-                  onSearch={(msg) => {
-                    if(msg) {
-                        ////////////////////// sendMessage(`Add {username}`)
-                        const data = `Add ${msg} ${id}`
-                        const option = {
-                          hostname: cppHostName,
-                          port: 4000,
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'text/plain',
-                            'Content-Length': da.length
+          {listFriends ?
+            // list friends page
+            <>
+              <div className="App-title">
+                <h1>All friends</h1>
+              </div>
+              <div>
+                {friends.map((e, i) => (
+                  <p className="App-message" key={i}>
+                    <Tag color="blue">{e}</Tag>
+                  </p>
+                ))}
+              </div>
+              <Button type="primary" danger onClick={() => {setListFriends(false)}}>
+                Leave
+              </Button>
+            </>
+            : 
+            <>
+              {addFriend ? 
+                // add friend page
+                <>
+                  <div className="App-title">
+                    <h1>Add friends</h1>
+                  </div>
+                  <Input.Search
+                    placeholder="Please enter a username:"
+                    enterButton="Add"
+                    style={{ marginBottom: 10 }}
+                    // onChange={(e) => setUsername(e.target.value)}
+                    onSearch={(msg) => {
+                      if(msg) {
+                          ////////////////////// sendMessage(`Add {username}`)
+                          const data = `Add ${msg} ${id}`
+                          const option = {
+                            hostname: cppHostName,
+                            port: 4000,
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'text/plain',
+                              // 'Content-Length': da.length
+                            }
                           }
-                        }
-                        const req = http.request(option, res => {
-                          // console.log(`statusCode: ${res.statusCode}`)
-                          res.on('data', d => {
-                            // console.log(d)
-                            if(d[0] === 49){
-                              displayStatus({
-                                type: 'error',
-                                msg: 'No user found.'
-                              })
-                            }
-                            else if(d[0] === 48){
-                              displayStatus({
-                                type: 'success',
-                                msg: 'Added successfully.'
-                              })
-                            }
-                          })
-                        })
-                        req.on('error', error => {
-                          console.error(error)
-                        })
-                        req.write(data)
-                        req.end()
-                    }
-                    else {
-                      displayStatus({
-                        type: 'error',
-                        msg: 'Please enter a username.'
-                      })
-                    } 
-                  }}>
-                </Input.Search>
-                <Button type="primary" danger onClick={() => setAddFriend(false)}>
-                  Leave
-                </Button>
-              </>
-              :
-              <>
-                {removeFriend ? 
-                  <>
-                    <div className="App-title">
-                      <h1>Remove friends</h1>
-                    </div>
-                    <div>
-                      {friends.map((e, i) => (
-                        <p className="App-message" key={i}>
-                          <Button type="ghost" onClick={() => {
-                            const da = `Remove ${e} ${id}`
-                            const option = {
-                              hostname: cppHostName,
-                              port: 4000,
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'text/plain',
-                                'Content-Length': da.length
+                          const req = http.request(option, res => {
+                            // console.log(`statusCode: ${res.statusCode}`)
+                            res.on('data', d => {
+                              // console.log(d)
+                              if(d[0] === 49){
+                                displayStatus({
+                                  type: 'error',
+                                  msg: 'No user found.'
+                                })
                               }
-                            }
-    
-                            const req = http.request(option, res => {
-                              // console.log(`statusCode: ${res.statusCode}`)
-                              res.on('data', d => {
-                                // console.log(d)
+                              else if(d[0] === 48){
                                 displayStatus({
                                   type: 'success',
-                                  msg: 'Removed successfully.'
+                                  msg: 'Added successfully.'
                                 })
-                                const index = friends.indexOf(e);
-                                const copy = [...friends]
-                                copy.splice(index, 1)
-                                setFriends(copy)
-                              })
+                              }
                             })
-    
-                            req.on('error', error => {
-                              console.error(error)
-                            })
-    
-                            req.write(da)
-                            req.end()
-                          }}>{e}</Button>
-                        </p>
-                      ))}
-                    </div>
-                    <Button type="primary" danger onClick={() => {
-                      setRemoveFriend(false)
+                          })
+                          req.on('error', error => {
+                            console.error(error)
+                          })
+                          req.write(data)
+                          req.end()
+                      }
+                      else {
+                        displayStatus({
+                          type: 'error',
+                          msg: 'Please enter a username.'
+                        })
+                      } 
                     }}>
-                      Leave
-                    </Button>
-                  </>
-                  :
-                  <>
-                    {chatRoom ? 
-                      <>
-                        <div className="App-title">
-                          <h1>Chat room</h1>
-                        </div>
-                        <div>
-                          {friends.map((e, i) => (
-                            <p className="App-message" key={i}>
-                              <Button type="ghost" onClick={() => {
-                                const da = `Chat ${e} ${id}`
-                                const option = {
-                                  hostname: cppHostName,
-                                  port: 4000,
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'text/plain',
-                                    'Content-Length': da.length
-                                  }
+                  </Input.Search>
+                  <Button type="primary" danger onClick={() => setAddFriend(false)}>
+                    Leave
+                  </Button>
+                </>
+                :
+                <>
+                  {removeFriend ? 
+                    <>
+                      <div className="App-title">
+                        <h1>Remove friends</h1>
+                      </div>
+                      <div>
+                        {friends.map((e, i) => (
+                          <p className="App-message" key={i}>
+                            <Button type="ghost" onClick={() => {
+                              const data = `Remove ${e} ${id}`
+                              const option = {
+                                hostname: cppHostName,
+                                port: 4000,
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'text/plain',
+                                  // 'Content-Length': da.length
                                 }
-        
-                                const req = http.request(option, res => {
-                                  // console.log(`statusCode: ${res.statusCode}`)
-                                  res.on('data', d => {
-                                    // console.log(d)
-                                    messageString = ""
-                                    for(var i=0; i<d.length; i++){
-                                      messageString += String.fromCharCode(d[i])
-                                    }
-                                    messageString = messageString.slice(0,-1)
-                                    // console.log(messageString)
-                                    const copy = messageString.split('\n')
-                                    copy.splice(0, 1)
-                                    // console.log(copy)
-                                    setMessagesList(copy)
+                              }
+                              const req = http.request(option, res => {
+                                // console.log(`statusCode: ${res.statusCode}`)
+                                res.on('data', d => {
+                                  // console.log(d)
+                                  displayStatus({
+                                    type: 'success',
+                                    msg: 'Removed successfully.'
                                   })
+                                  const index = friends.indexOf(e);
+                                  const copy = [...friends]
+                                  copy.splice(index, 1)
+                                  setFriends(copy)
                                 })
+                              })
+                              req.on('error', error => {
+                                console.error(error)
+                              })
+                              req.write(data)
+                              req.end()
+                            }}>{e}</Button>
+                          </p>
+                        ))}
+                      </div>
+                      <Button type="primary" danger onClick={() => {
+                        setRemoveFriend(false)
+                      }}>
+                        Leave
+                      </Button>
+                    </>
+                    :
+                    <>
+                      {chatRoom ? 
+                        <>
+                          <div className="App-title">
+                            <h1>Chat room</h1>
+                          </div>
+                          <div>
+                            {friends.map((e, i) => (
+                              <p className="App-message" key={i}>
+                                <Button type="ghost" onClick={() => {
+                                  const data = `Chat ${e} ${id}`
+                                  const option = {
+                                    hostname: cppHostName,
+                                    port: 4000,
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'text/plain',
+                                      // 'Content-Length': da.length
+                                    }
+                                  }
+                                  const req = http.request(option, res => {
+                                    // console.log(`statusCode: ${res.statusCode}`)
+                                    res.on('data', d => {
+                                      // console.log(d)
+                                      messageString = ""
+                                      for(let i=0; i<d.length; i++){
+                                        messageString += String.fromCharCode(d[i])
+                                      }
+                                      messageString = messageString.slice(0,-1)
+                                      // console.log(messageString)
+                                      const copy = messageString.split('\n')
+                                      copy.splice(0, 1)
+                                      // console.log(copy)
+                                      setMessagesList(copy)
+                                    })
+                                  })
+            
+                                  req.on('error', error => {
+                                    console.error(error)
+                                  })
           
-                                req.on('error', error => {
-                                  console.error(error)
-                                })
-        
-                                req.write(da)
-                                req.end()
-                                setChattingFriend(e)
-                                setChatting(true)
-                                setChatRoom(false)
-                              }}>{e}</Button>
-                            </p>
-                          ))}
-                        </div>
+                                  req.write(data)
+                                  req.end()
+                                  setChattingFriend(e)
+                                  setChatting(true)
+                                  setChatRoom(false)
+                                }}>{e}</Button>
+                              </p>
+                            ))}
+                          </div>
 
-                        <Button type="primary" danger onClick={() => {
-                          setChatRoom(false)
-                        }}>Leave</Button>
-                      </>
-                      :
-                      <>
-                        {chatting ? 
-                          <>
-                            <div className="App-title">
-                              <h1>{chattingFriend}</h1>
-                            </div>
-                            <div className="App-messages" ref={bodyRef}>
-                              {messagesList.map((e, i) => (
-                                e[0] === 'A' ? (
-                                  <p key={i} align="right">
-                                    <Tag color="#69c0ff">{e.slice(3)}</Tag>
-                                  </p> 
-                                ) : ( e[0] === 'B' ? (
-                                    <p key={i} align="left">
-                                      <Tag color="#95de64">{e.slice(3)}</Tag>
-                                    </p>
-                                  ) : ( e[1] === 'A' ? (
+                          <Button type="primary" danger onClick={() => {
+                            setChatRoom(false)
+                          }}>Leave</Button>
+                        </>
+                        :
+                        <>
+                          {chatting ? 
+                            <>
+                              <div className="App-title">
+                                <h1>{chattingFriend}</h1>
+                              </div>
+                              <div className="App-messages" ref={bodyRef}>
+                                {messagesList.map((e, i) => (
+                                  e[0] === 'A' ? (
                                     <p key={i} align="right">
-                                      <Tag color="#096dd9" onClick={() => {
-                                        let da = `Download${id} ${e.slice(4)}`
-                                        let option = {
-                                          hostname: cppHostName,
-                                          port: 4000,
-                                          method: 'POST',
-                                          headers: {
-                                            'Content-Type': 'text/plain',
-                                            'Content-Length': da.length
-                                          }
-                                        }
-                                        let req = http.request(option, res => {
-                                          // console.log(`statusCode: ${res.statusCode}`)
-                                          res.on('data', d => {
-                                            console.log(d)
-                                          })
-                                        })
-                                        req.on('error', error => {
-                                          console.error(error)
-                                        })
-                                        req.write(da)
-                                        req.end()
-
-                                        while(true){
-                                          da = `DownloadImme${id}`
-                                          // da += reader.result[i]
-                                          // i++; j++
-                                          option = {
-                                            hostname: cppHostName,
-                                            port: 4000,
-                                            method: 'POST',
-                                            headers: {
-                                              'Content-Type': 'text/plain',
-                                              'Content-Length': da.length
-                                            }
-                                          }
-                                          req = http.request(option, res => {
-                                            // console.log(`statusCode: ${res.statusCode}`)
-                                            res.on('data', d => {
-                                              // console.log(d)
-                                              fileString = ""
-                                              for(var i=0; i<d.length; i++){
-                                                fileString += String.fromCharCode(d[i])
-                                              }
-                                              console.log(fileString)
-                                              console.log(fileString.length)
-
-                                              let _option = {
-                                                hostname: jsHostName,
-                                                port: 5000,
-                                                method: 'POST',
-                                                headers: {
-                                                  'Content-Type': 'text/plain',
-                                                  'Content-Length': fileString.length
-                                                }
-                                              }
-
-                                              let _req = http.request(_option, _res => {
-                                                console.log(_res)
-                                              })
-                                              _req.on('error', error => {
-                                                console.error(error)
-                                              })
-                                              _req.write(`${e.slice(4)} ${fileString}`);
-                                              console.log(e.slice(4))
-                                              _req.end()
-                                            })
-                                          })
-                                          req.on('error', error => {
-                                            console.error(error)
-                                          })
-                                          req.write(da);
-                                          req.end()
-                                          // j = 0
-                                          // da = ""
-                                          break
-                                        }
-                                        
-                                      }}>{e.slice(4)}</Tag>
+                                      <Tag color="#69c0ff">{e.slice(3)}</Tag>
                                     </p> 
-                                    ) : (
+                                  ) : ( e[0] === 'B' ? (
                                       <p key={i} align="left">
-                                        <Tag color="#389e0d" onClick={() => {
-                                          console.log("Here")
+                                        <Tag color="#95de64">{e.slice(3)}</Tag>
+                                      </p>
+                                    ) : ( e[1] === 'A' ? (
+                                      <p key={i} align="right">
+                                        <Tag color="#096dd9" onClick={() => {
                                           let da = `Download${id} ${e.slice(4)}`
                                           let option = {
                                             hostname: cppHostName,
@@ -420,7 +332,7 @@ function App() {
                                           let req = http.request(option, res => {
                                             // console.log(`statusCode: ${res.statusCode}`)
                                             res.on('data', d => {
-                                              // console.log(d)
+                                              console.log(d)
                                             })
                                           })
                                           req.on('error', error => {
@@ -445,7 +357,33 @@ function App() {
                                             req = http.request(option, res => {
                                               // console.log(`statusCode: ${res.statusCode}`)
                                               res.on('data', d => {
-                                                console.log(d)
+                                                // console.log(d)
+                                                fileString = ""
+                                                for(var i=0; i<d.length; i++){
+                                                  fileString += String.fromCharCode(d[i])
+                                                }
+                                                console.log(fileString)
+                                                console.log(fileString.length)
+
+                                                let _option = {
+                                                  hostname: jsHostName,
+                                                  port: 5000,
+                                                  method: 'POST',
+                                                  headers: {
+                                                    'Content-Type': 'text/plain',
+                                                    'Content-Length': fileString.length
+                                                  }
+                                                }
+
+                                                let _req = http.request(_option, _res => {
+                                                  console.log(_res)
+                                                })
+                                                _req.on('error', error => {
+                                                  console.error(error)
+                                                })
+                                                _req.write(`${e.slice(4)} ${fileString}`);
+                                                console.log(e.slice(4))
+                                                _req.end()
                                               })
                                             })
                                             req.on('error', error => {
@@ -457,96 +395,88 @@ function App() {
                                             // da = ""
                                             break
                                           }
+                                          
                                         }}>{e.slice(4)}</Tag>
                                       </p> 
+                                      ) : (
+                                        <p key={i} align="left">
+                                          <Tag color="#389e0d" onClick={() => {
+                                            console.log("Here")
+                                            let da = `Download${id} ${e.slice(4)}`
+                                            let option = {
+                                              hostname: cppHostName,
+                                              port: 4000,
+                                              method: 'POST',
+                                              headers: {
+                                                'Content-Type': 'text/plain',
+                                                'Content-Length': da.length
+                                              }
+                                            }
+                                            let req = http.request(option, res => {
+                                              // console.log(`statusCode: ${res.statusCode}`)
+                                              res.on('data', d => {
+                                                // console.log(d)
+                                              })
+                                            })
+                                            req.on('error', error => {
+                                              console.error(error)
+                                            })
+                                            req.write(da)
+                                            req.end()
+
+                                            while(true){
+                                              da = `DownloadImme${id}`
+                                              // da += reader.result[i]
+                                              // i++; j++
+                                              option = {
+                                                hostname: cppHostName,
+                                                port: 4000,
+                                                method: 'POST',
+                                                headers: {
+                                                  'Content-Type': 'text/plain',
+                                                  'Content-Length': da.length
+                                                }
+                                              }
+                                              req = http.request(option, res => {
+                                                // console.log(`statusCode: ${res.statusCode}`)
+                                                res.on('data', d => {
+                                                  console.log(d)
+                                                })
+                                              })
+                                              req.on('error', error => {
+                                                console.error(error)
+                                              })
+                                              req.write(da);
+                                              req.end()
+                                              // j = 0
+                                              // da = ""
+                                              break
+                                            }
+                                          }}>{e.slice(4)}</Tag>
+                                        </p> 
+                                      )
                                     )
                                   )
-                                )
-                              ))}
-                            </div>
-                            <Input.Search
-                              // rows={4}
-                              value={messages}
-                              // ref={bodyRef}
-                              enterButton="Send"
-                              onChange={(e) => setMessages(e.target.value)}
-                              placeholder="Type a message here..."
-                              onSearch={(msg) => {
-                                if (!msg) {
-                                  displayStatus({
-                                    type: 'error',
-                                    msg: 'Please enter a message.'
-                                  })
-                                  return
-                                }
-                                else {
-                                  const da = `Text${id} ${msg}`
-                                  const option = {
-                                    hostname: cppHostName,
-                                    port: 4000,
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'text/plain',
-                                      'Content-Length': da.length
-                                    }
-                                  }
-          
-                                  const req = http.request(option, res => {
-                                    // console.log(`statusCode: ${res.statusCode}`)
-                                    res.on('data', d => {
-                                      // console.log(d)
+                                ))}
+                              </div>
+                              <Input.Search
+                                // rows={4}
+                                value={messages}
+                                // ref={bodyRef}
+                                enterButton="Send"
+                                onChange={(e) => setMessages(e.target.value)}
+                                placeholder="Type a message here..."
+                                onSearch={(msg) => {
+                                  if (!msg) {
+                                    displayStatus({
+                                      type: 'error',
+                                      msg: 'Please enter a message.'
                                     })
-                                  })
-            
-                                  req.on('error', error => {
-                                    console.error(error)
-                                  })
-          
-                                  req.write(da)
-                                  req.end()
-                                  msg = "A: " + msg
-                                  setMessagesList([...messagesList, msg])
-                                }
-                                setMessages('')
-                              }}
-                            ></Input.Search>
-                            <br/>
-                            <Upload showUploadList={false} beforeUpload={(file) => {
-                              const reader = new FileReader();
-
-                              reader.onload = () => {
-                                // console.log(reader.result)
-                                let da = `FileName${id} ${file.name}`
-                                let option = {
-                                  hostname: cppHostName,
-                                  port: 4000,
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'text/plain',
-                                    'Content-Length': da.length
+                                    return
                                   }
-                                }
-                                let req = http.request(option, res => {
-                                  // console.log(`statusCode: ${res.statusCode}`)
-                                  res.on('data', d => {
-                                    // console.log(d)
-                                  })
-                                })
-                                req.on('error', error => {
-                                  console.error(error)
-                                })
-                                req.write(da)
-                                req.end()
-                                
-
-                                let i = 0, j = 0;
-                                da = ""
-                                console.log(reader.result.length)
-                                while(i < reader.result.length){
-                                  da += reader.result[i]
-                                  i++; j++
-                                  if(j === MAX_SIZE_OF_DATA - id.length - 9){
-                                    option = {
+                                  else {
+                                    const da = `Text${id} ${msg}`
+                                    const option = {
                                       hostname: cppHostName,
                                       port: 4000,
                                       method: 'POST',
@@ -555,206 +485,271 @@ function App() {
                                         'Content-Length': da.length
                                       }
                                     }
-                                    req = http.request(option, res => {
+            
+                                    const req = http.request(option, res => {
                                       // console.log(`statusCode: ${res.statusCode}`)
                                       res.on('data', d => {
                                         // console.log(d)
                                       })
                                     })
+              
                                     req.on('error', error => {
                                       console.error(error)
                                     })
-                                    req.write(`FileImme${id} ${da}`);
-                                    console.log(da)
+            
+                                    req.write(da)
                                     req.end()
-                                    j = 0
-                                    da = ""
+                                    msg = "A: " + msg
+                                    setMessagesList([...messagesList, msg])
                                   }
-                                }
+                                  setMessages('')
+                                }}
+                              ></Input.Search>
+                              <br/>
+                              <Upload showUploadList={false} beforeUpload={(file) => {
+                                const reader = new FileReader();
 
-                                console.log(da.length)
+                                reader.onload = () => {
+                                  // console.log(reader.result)
+                                  let da = `FileName${id} ${file.name}`
+                                  let option = {
+                                    hostname: cppHostName,
+                                    port: 4000,
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'text/plain',
+                                      'Content-Length': da.length
+                                    }
+                                  }
+                                  let req = http.request(option, res => {
+                                    // console.log(`statusCode: ${res.statusCode}`)
+                                    res.on('data', d => {
+                                      // console.log(d)
+                                    })
+                                  })
+                                  req.on('error', error => {
+                                    console.error(error)
+                                  })
+                                  req.write(da)
+                                  req.end()
+                                  
 
-                                let len = da.length
-                                da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 12 - id.length - `${da.length}`.length)
-                                da = `FileFinish${id} ${len} ${da}`
-                                option = {
+                                  let i = 0, j = 0;
+                                  da = ""
+                                  console.log(reader.result.length)
+                                  while(i < reader.result.length){
+                                    da += reader.result[i]
+                                    i++; j++
+                                    if(j === MAX_SIZE_OF_DATA - id.length - 9){
+                                      option = {
+                                        hostname: cppHostName,
+                                        port: 4000,
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'text/plain',
+                                          'Content-Length': da.length
+                                        }
+                                      }
+                                      req = http.request(option, res => {
+                                        // console.log(`statusCode: ${res.statusCode}`)
+                                        res.on('data', d => {
+                                          // console.log(d)
+                                        })
+                                      })
+                                      req.on('error', error => {
+                                        console.error(error)
+                                      })
+                                      req.write(`FileImme${id} ${da}`);
+                                      console.log(da)
+                                      req.end()
+                                      j = 0
+                                      da = ""
+                                    }
+                                  }
+
+                                  console.log(da.length)
+
+                                  let len = da.length
+                                  da += '\0'.repeat(MAX_SIZE_OF_DATA - da.length - 12 - id.length - `${da.length}`.length)
+                                  da = `FileFinish${id} ${len} ${da}`
+                                  option = {
+                                    hostname: cppHostName,
+                                    port: 4000,
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'text/plain',
+                                      'Content-Length': da.length
+                                    }
+                                  }
+                                  req = http.request(option, res => {
+                                    // console.log(`statusCode: ${res.statusCode}`)
+                                    res.on('data', d => {
+                                      // console.log(d)
+                                    })
+                                  })
+                                  req.on('error', error => {
+                                    console.error(error)
+                                  })
+                                  req.write(da)
+                                  displayStatus({
+                                    type: 'success',
+                                    msg: 'Uploaded successfully.'
+                                  })
+                                  req.end()
+                                  setMessagesList([...messagesList, `FA: ${file.name}`])
+                                };
+                                reader.readAsBinaryString(file);
+
+                                // Prevent upload
+                                return false;
+                              }}>
+                                <Button icon={<UploadOutlined />}>Upload a file or an image</Button>
+                              </Upload>
+                              <br/>
+                              <Button type="primary" danger onClick={() => {
+                                setChatting(false)
+                                setChatRoom(true)
+                              }}>Leave</Button>
+                            </>
+                            :
+                            <>
+                              <div className="App-title">
+                                <h1>Welcome, {username}!</h1>
+                              </div>
+                              <div className="App-title">
+                                <h2>Choose an option to continue...</h2>
+                              </div>
+                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                                /////////////////////sendMessage('List friends')
+                                // http.onload = () => console.log(http.responseText)
+                                // http.send('List friends')
+                                //////////////////////////
+                                // const da = JSON.stringify({
+                                //   todo: 'Buy the milk'
+                                // })
+                                const da = "List friends"
+                                const option = {
                                   hostname: cppHostName,
                                   port: 4000,
                                   method: 'POST',
                                   headers: {
                                     'Content-Type': 'text/plain',
-                                    'Content-Length': da.length
+                                    'Content-Length': da.length,
                                   }
                                 }
-                                req = http.request(option, res => {
+
+                                const req = http.request(option, res => {
                                   // console.log(`statusCode: ${res.statusCode}`)
                                   res.on('data', d => {
                                     // console.log(d)
+                                    friendString = ""
+                                    for(var i=0; i<d.length; i++){
+                                      friendString += String.fromCharCode(d[i])
+                                    }
+                                    friendString = friendString.slice(0,-1)
+                                    // console.log(friendString)
+                                    setFriends(friendString.split('\n'))
                                   })
                                 })
+
                                 req.on('error', error => {
                                   console.error(error)
                                 })
-                                req.write(da)
-                                displayStatus({
-                                  type: 'success',
-                                  msg: 'Uploaded successfully.'
-                                })
+
+                                req.write(`List friends ${id}`)
                                 req.end()
-                                setMessagesList([...messagesList, `FA: ${file.name}`])
-                              };
-                              reader.readAsBinaryString(file);
-
-                              // Prevent upload
-                              return false;
-                            }}>
-                              <Button icon={<UploadOutlined />}>Upload a file or an image</Button>
-                            </Upload>
-                            <br/>
-                            <Button type="primary" danger onClick={() => {
-                              setChatting(false)
-                              setChatRoom(true)
-                            }}>Leave</Button>
-                          </>
-                          :
-                          <>
-                            <div className="App-title">
-                              <h1>Welcome, {username}!</h1>
-                            </div>
-                            <div className="App-title">
-                              <h2>Choose an option to continue...</h2>
-                            </div>
-                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                              /////////////////////sendMessage('List friends')
-                              // http.onload = () => console.log(http.responseText)
-                              // http.send('List friends')
-                              //////////////////////////
-                              // const da = JSON.stringify({
-                              //   todo: 'Buy the milk'
-                              // })
-                              const da = "List friends"
-                              const option = {
-                                hostname: cppHostName,
-                                port: 4000,
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'text/plain',
-                                  'Content-Length': da.length,
-                                }
-                              }
-
-                              const req = http.request(option, res => {
-                                // console.log(`statusCode: ${res.statusCode}`)
-                                res.on('data', d => {
-                                  // console.log(d)
-                                  friendString = ""
-                                  for(var i=0; i<d.length; i++){
-                                    friendString += String.fromCharCode(d[i])
+                                /////////////////////////////
+                                setListFriends(true)
+                              }}>
+                                List all friends
+                              </Button>
+                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                                setAddFriend(true)
+                              }}>
+                                Add friends
+                              </Button>
+                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                                const da = "List friends"
+                                const option = {
+                                  hostname: cppHostName,
+                                  port: 4000,
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'text/plain',
+                                    'Content-Length': da.length,
                                   }
-                                  friendString = friendString.slice(0,-1)
-                                  // console.log(friendString)
-                                  setFriends(friendString.split('\n'))
-                                })
-                              })
-
-                              req.on('error', error => {
-                                console.error(error)
-                              })
-
-                              req.write(`List friends ${id}`)
-                              req.end()
-                              /////////////////////////////
-                              setListFriends(true)
-                            }}>
-                              List all friends
-                            </Button>
-                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                              setAddFriend(true)
-                            }}>
-                              Add friends
-                            </Button>
-                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                              const da = "List friends"
-                              const option = {
-                                hostname: cppHostName,
-                                port: 4000,
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'text/plain',
-                                  'Content-Length': da.length,
                                 }
-                              }
 
-                              const req = http.request(option, res => {
-                                // console.log(`statusCode: ${res.statusCode}`)
-                                res.on('data', d => {
-                                  // console.log(d)
-                                  friendString = ""
-                                  for(var i=0; i<d.length; i++){
-                                    friendString += String.fromCharCode(d[i])
-                                  }
-                                  friendString = friendString.slice(0,-1)
-                                  // console.log(friendString)
-                                  setFriends(friendString.split('\n'))
+                                const req = http.request(option, res => {
+                                  // console.log(`statusCode: ${res.statusCode}`)
+                                  res.on('data', d => {
+                                    // console.log(d)
+                                    friendString = ""
+                                    for(var i=0; i<d.length; i++){
+                                      friendString += String.fromCharCode(d[i])
+                                    }
+                                    friendString = friendString.slice(0,-1)
+                                    // console.log(friendString)
+                                    setFriends(friendString.split('\n'))
+                                  })
                                 })
-                              })
 
-                              req.on('error', error => {
-                                console.error(error)
-                              })
+                                req.on('error', error => {
+                                  console.error(error)
+                                })
 
-                              req.write(`List friends ${id}`)
-                              req.end()
-                              setRemoveFriend(true)
-                            }}>
-                              Remove friends
-                            </Button>
-                            <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
-                              const da = "List friends"
-                              const option = {
-                                hostname: cppHostName,
-                                port: 4000,
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'text/plain',
-                                  'Content-Length': da.length,
+                                req.write(`List friends ${id}`)
+                                req.end()
+                                setRemoveFriend(true)
+                              }}>
+                                Remove friends
+                              </Button>
+                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                                const da = "List friends"
+                                const option = {
+                                  hostname: cppHostName,
+                                  port: 4000,
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'text/plain',
+                                    'Content-Length': da.length,
+                                  }
                                 }
-                              }
 
-                              const req = http.request(option, res => {
-                                // console.log(`statusCode: ${res.statusCode}`)
-                                res.on('data', d => {
-                                  // console.log(d)
-                                  friendString = ""
-                                  for(var i=0; i<d.length; i++){
-                                    friendString += String.fromCharCode(d[i])
-                                  }
-                                  friendString = friendString.slice(0,-1)
-                                  // console.log(friendString)
-                                  setFriends(friendString.split('\n'))
+                                const req = http.request(option, res => {
+                                  // console.log(`statusCode: ${res.statusCode}`)
+                                  res.on('data', d => {
+                                    // console.log(d)
+                                    friendString = ""
+                                    for(var i=0; i<d.length; i++){
+                                      friendString += String.fromCharCode(d[i])
+                                    }
+                                    friendString = friendString.slice(0,-1)
+                                    // console.log(friendString)
+                                    setFriends(friendString.split('\n'))
+                                  })
                                 })
-                              })
 
-                              req.on('error', error => {
-                                console.error(error)
-                              })
+                                req.on('error', error => {
+                                  console.error(error)
+                                })
 
-                              req.write(`List friends ${id}`)
-                              req.end()
-                              setChatRoom(true)
-                            }}>
-                              Chat with
-                            </Button>
-                          </>
-                        }
-                      </>
-                    }
-                  </>
-                }
-              </>
-            }
-          </>
-        }
+                                req.write(`List friends ${id}`)
+                                req.end()
+                                setChatRoom(true)
+                              }}>
+                                Chat with
+                              </Button>
+                            </>
+                          }
+                        </>
+                      }
+                    </>
+                  }
+                </>
+              }
+            </>
+          }
         </>
       }
     </div>
