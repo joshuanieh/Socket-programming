@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 	string httpRequest, fileroot = "./public", name, pass;
 	const filesystem::path root{fileroot};
 	vector<string> filelist, allUsername;
-	string chattingFriend[max_number_of_users_in_database], filename[max_number_of_users_in_database], password[max_number_of_users_in_database];
+	string chattingFriend[max_number_of_users_in_database], filename[max_number_of_users_in_database];
 	int filesize[max_number_of_users_in_database], headerLength;
 	for (const auto &n : filesystem::directory_iterator{root}) {
 		if (n.is_directory())
@@ -234,6 +234,10 @@ int main(int argc, char const *argv[]) {
 								}
 							}
 							if(flag) continue;
+							file.open("./password.txt", ios::app);
+							string line = name + " " + pass + "\n";
+							file.write(line);
+							file.close();
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 			    			sprintf(httpResponse, "%s%d", httpResponse, k);
 						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
