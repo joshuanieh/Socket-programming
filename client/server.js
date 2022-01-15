@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => {
         let fileName = message.substr(0, message.indexOf(' '))
         let content = message.substr(message.indexOf(' ') + 1)
         // console.log(content)
-        fs.writeFile(`./client_dir/${fileName}`, content, (err) => {
+        fs.appendFile(`./client_dir/${fileName}`, content, (err) => {
             console.log(err)
         })
     })
