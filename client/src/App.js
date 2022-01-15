@@ -317,91 +317,12 @@ function App() {
                                         <Tag color="#95de64">{e.slice(3)}</Tag>
                                       </p>
                                     ) : ( e[1] === 'A' ? (
-                                      <p key={i} align="right">
-                                        <Tag color="#096dd9" onClick={() => {
-                                          let da = `Download${id} ${e.slice(4)}`
-                                          let option = {
-                                            hostname: cppHostName,
-                                            port: 4000,
-                                            method: 'POST',
-                                            headers: {
-                                              'Content-Type': 'text/plain',
-                                              'Content-Length': da.length
-                                            }
-                                          }
-                                          let req = http.request(option, res => {
-                                            // console.log(`statusCode: ${res.statusCode}`)
-                                            res.on('data', d => {
-                                              console.log(d)
-                                            })
-                                          })
-                                          req.on('error', error => {
-                                            console.error(error)
-                                          })
-                                          req.write(da)
-                                          req.end()
-
-                                          while(true){
-                                            da = `DownloadImme${id}`
-                                            // da += reader.result[i]
-                                            // i++; j++
-                                            option = {
-                                              hostname: cppHostName,
-                                              port: 4000,
-                                              method: 'POST',
-                                              headers: {
-                                                'Content-Type': 'text/plain',
-                                                'Content-Length': da.length
-                                              }
-                                            }
-                                            req = http.request(option, res => {
-                                              // console.log(`statusCode: ${res.statusCode}`)
-                                              res.on('data', d => {
-                                                // console.log(d)
-                                                fileString = ""
-                                                for(var i=0; i<d.length; i++){
-                                                  fileString += String.fromCharCode(d[i])
-                                                }
-                                                console.log(fileString)
-                                                console.log(fileString.length)
-
-                                                let _option = {
-                                                  hostname: jsHostName,
-                                                  port: 5000,
-                                                  method: 'POST',
-                                                  headers: {
-                                                    'Content-Type': 'text/plain',
-                                                    'Content-Length': fileString.length
-                                                  }
-                                                }
-
-                                                let _req = http.request(_option, _res => {
-                                                  console.log(_res)
-                                                })
-                                                _req.on('error', error => {
-                                                  console.error(error)
-                                                })
-                                                _req.write(`${e.slice(4)} ${fileString}`);
-                                                console.log(e.slice(4))
-                                                _req.end()
-                                              })
-                                            })
-                                            req.on('error', error => {
-                                              console.error(error)
-                                            })
-                                            req.write(da);
-                                            req.end()
-                                            // j = 0
-                                            // da = ""
-                                            break
-                                          }
-                                          
-                                        }}>{e.slice(4)}</Tag>
-                                      </p> 
+                                      e.slice(-3) === 'png' || e.slice(-3) === 'jpg' ? (
+                                        <img src="//127.0.0.1/home/jimmy/Documents/03_EE_j1/03_計算機網路/Socket-programming/server/client_dir/logo192.png" alt="enter image description here"></img>
+                                        // <img key={i} src="/client_dir/logo192.png" alt=""></img>
                                       ) : (
-                                        <p key={i} align="left">
-                                          <Tag color="#389e0d" onClick={() => {
-                                            console.log("Here")
+                                        <p key={i} align="right">
+                                          <Tag color="#096dd9" onClick={() => {
                                             let da = `Download${id} ${e.slice(4)}`
                                             let option = {
                                               hostname: cppHostName,
@@ -415,7 +336,7 @@ function App() {
                                             let req = http.request(option, res => {
                                               // console.log(`statusCode: ${res.statusCode}`)
                                               res.on('data', d => {
-                                                // console.log(d)
+                                                console.log(d)
                                               })
                                             })
                                             req.on('error', error => {
@@ -440,7 +361,33 @@ function App() {
                                               req = http.request(option, res => {
                                                 // console.log(`statusCode: ${res.statusCode}`)
                                                 res.on('data', d => {
-                                                  console.log(d)
+                                                  // console.log(d)
+                                                  fileString = ""
+                                                  for(var i=0; i<d.length; i++){
+                                                    fileString += String.fromCharCode(d[i])
+                                                  }
+                                                  console.log(fileString)
+                                                  console.log(fileString.length)
+
+                                                  let _option = {
+                                                    hostname: jsHostName,
+                                                    port: 5000,
+                                                    method: 'POST',
+                                                    headers: {
+                                                      'Content-Type': 'text/plain',
+                                                      'Content-Length': fileString.length
+                                                    }
+                                                  }
+
+                                                  let _req = http.request(_option, _res => {
+                                                    console.log(_res)
+                                                  })
+                                                  _req.on('error', error => {
+                                                    console.error(error)
+                                                  })
+                                                  _req.write(`${e.slice(4)} ${fileString}`);
+                                                  console.log(e.slice(4))
+                                                  _req.end()
                                                 })
                                               })
                                               req.on('error', error => {
@@ -454,6 +401,67 @@ function App() {
                                             }
                                           }}>{e.slice(4)}</Tag>
                                         </p> 
+                                        )
+                                      ) : (
+                                        e.slice(-3) === 'png' || e.slice(-3) === 'jpg' ? (
+                                          <img src="" alt=""></img>
+                                        ) : (
+                                          <p key={i} align="left">
+                                            <Tag color="#389e0d" onClick={() => {
+                                              console.log("Here")
+                                              let da = `Download${id} ${e.slice(4)}`
+                                              let option = {
+                                                hostname: cppHostName,
+                                                port: 4000,
+                                                method: 'POST',
+                                                headers: {
+                                                  'Content-Type': 'text/plain',
+                                                  'Content-Length': da.length
+                                                }
+                                              }
+                                              let req = http.request(option, res => {
+                                                // console.log(`statusCode: ${res.statusCode}`)
+                                                res.on('data', d => {
+                                                  // console.log(d)
+                                                })
+                                              })
+                                              req.on('error', error => {
+                                                console.error(error)
+                                              })
+                                              req.write(da)
+                                              req.end()
+
+                                              while(true){
+                                                da = `DownloadImme${id}`
+                                                // da += reader.result[i]
+                                                // i++; j++
+                                                option = {
+                                                  hostname: cppHostName,
+                                                  port: 4000,
+                                                  method: 'POST',
+                                                  headers: {
+                                                    'Content-Type': 'text/plain',
+                                                    'Content-Length': da.length
+                                                  }
+                                                }
+                                                req = http.request(option, res => {
+                                                  // console.log(`statusCode: ${res.statusCode}`)
+                                                  res.on('data', d => {
+                                                    console.log(d)
+                                                  })
+                                                })
+                                                req.on('error', error => {
+                                                  console.error(error)
+                                                })
+                                                req.write(da);
+                                                req.end()
+                                                // j = 0
+                                                // da = ""
+                                                break
+                                              }
+                                            }}>{e.slice(4)}</Tag>
+                                          </p> 
+                                        )
                                       )
                                     )
                                   )
