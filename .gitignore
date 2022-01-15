@@ -32,3 +32,4 @@ client/src/client
 server/server.o
 public
 client/client_dir
+server/password.txt

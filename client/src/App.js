@@ -6,7 +6,6 @@ const http = require('http');
 
 function App() {
 
-// hooks
   const [id, setID] = useState(0)
   const [username, setUsername] = useState('')
 
@@ -101,7 +100,6 @@ function App() {
 
   const bodyRef = useRef(null)
 
-// variables and constants
   const cppHostName = '127.0.0.1'
   const jsHostName = '127.0.0.1'
   const MAX_SIZE_OF_DATA = 3000;
@@ -163,7 +161,7 @@ function App() {
                   // console.log(`statusCode: ${res.statusCode}`)
                   res.on('data', d => {
                     // console.log(d)
-                    if(d[0] === 'x'){
+                    if(d[0] === 120){
                       displayStatus({
                         type: 'error',
                         msg: 'Logged in failed'

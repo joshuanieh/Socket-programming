@@ -212,7 +212,7 @@ int main(int argc, char const *argv[]) {
 	            		//Format: "Login{username} {password}"
 	            		//Return: user index or 'x'
 						if(data.substr(0, 5) == "Login") {
-							name = data.substr(6, data.find(" ") - 6);
+							name = data.substr(5, data.find(" ") - 5);
 							pass = data.substr(data.find(" ") + 1);
 							int k;
 							cout << name << endl;
