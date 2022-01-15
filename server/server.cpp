@@ -16,7 +16,7 @@
 #define socket_type SOCK_STREAM
 #define socket_protocol 0
 #define buff_len 4096
-#define max_number_of_users 20
+#define max_number_of_users 40
 #define max_number_of_users_in_database INT16_MAX
 using namespace std;
 
