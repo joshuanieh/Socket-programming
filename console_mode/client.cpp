@@ -45,9 +45,9 @@ int main(int argc, char const *argv[]) {
 	
 	//login
 	while(true){
-		cout << "input your username: " << endl;
+		cout << "Input your username: " << endl;
 		getline(cin, name);
-		cout << "input your password: " << endl;
+		cout << "Input your password: " << endl;
 		getline(cin, passwd);
 		line = "Login" + name + " " + passwd;
 		strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
@@ -99,7 +99,7 @@ int main(int argc, char const *argv[]) {
 				break;
 			}
 			case 2: {
-				cout << "input a username: " << endl;
+				cout << "Input a username: " << endl;
 				getline(cin, friendName);
 				line = "Add " + friendName + " " + id;
 				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
@@ -111,15 +111,15 @@ int main(int argc, char const *argv[]) {
 				httpResponse = buff;
 				// cout << httpResponse << endl;
 				if(httpResponse.substr(51, string::npos) == "0"){
-					cout << "added successfully" << endl;
+					cout << "Added successfully" << endl;
 				}
 				else if(httpResponse.substr(51, string::npos) == "1"){
-					cout << "no user found" << endl;
+					cout << "No user found" << endl;
 				}
 				break;
 			}
 			case 3: {
-				cout << "input a username: " << endl;
+				cout << "Input a username: " << endl;
 				getline(cin, friendName);
 				line = "Remove " + friendName + " " + id;
 				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
@@ -128,12 +128,12 @@ int main(int argc, char const *argv[]) {
 				memset(buff, '\0', buff_len);
 				recv(client_fd, buff, buff_len, 0);
 				httpResponse = buff;
-				cout << httpResponse << endl;
+				// cout << httpResponse << endl;
 				if(httpResponse.substr(51, string::npos) == "0"){
-					cout << "removed successfully" << endl;
+					cout << "Removed successfully" << endl;
 				}
 				else {
-					cout << "no friend found" << endl;
+					cout << "No friend found" << endl;
 				}
 				break;
 			}
@@ -150,12 +150,12 @@ int main(int argc, char const *argv[]) {
 					memset(buff, '\0', buff_len);
 					recv(client_fd, buff, buff_len, 0);
 					httpResponse = buff;
-					cout << httpResponse << endl;
+					// cout << httpResponse << endl;
 					if (httpResponse.substr(httpResponse.find("\r\n\r\n") + 4)[0] == '1') {
 						cout << "invalid friend name" << endl;
 					}
 					else {
-						cout << httpResponse.substr(httpResponse.find("\r\n\r\n") + 4) << endl;
+						// cout << httpResponse.substr(httpResponse.find("\r\n\r\n") + 4) << endl;
 						cout << "Please type \"Text <text>\" or \"Download <filename>\" or \"Upload <filename>\" (or \"quit\" to return)" << endl;
 						while(true) {
 							getline(cin, line);
@@ -197,7 +197,7 @@ int main(int argc, char const *argv[]) {
 										file.read(buff, 3000 - line.size());
 										// cout << buff << endl;
 										if(strlen(buff) != 3000 - line.size()) break;
-										cout << "buff: " << buff << endl;
+										// cout << "buff: " << buff << endl;
 										line += buff;
 										strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 										send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
@@ -209,7 +209,7 @@ int main(int argc, char const *argv[]) {
 									char endZero[3000 - line.size()];
 									memset(endZero, '-', 3000 - line.size());
 									line += endZero;
-									cout << "line: " << line << endl;
+									// cout << "line: " << line << endl;
 									strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									recv(client_fd, buff, buff_len, 0);
@@ -231,12 +231,12 @@ int main(int argc, char const *argv[]) {
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								memset(buff, '\0', buff_len);
 								recv(client_fd, buff, buff_len, 0);
-								if(strcmp(buff, "x") == 0) {
+								httpResponse = buff;
+								if(httpResponse.substr(httpResponse.find("\r\n\r\n") + 4)[0] == 'x') {
 									cout << "The " << filename << " doesn't exist" << endl;
 									continue;
 								}
-								filesize = atoll(buff);
-								cout << "filesize: " << filesize << endl;
+								filesize = atoll((httpResponse.substr(httpResponse.find("\r\n\r\n") + 4)).c_str());
 								file.open(root/filename, ios::out|ios::binary);
 								file.close();
 								for(long long l = 0; l < (filesize/4045); l++) {
@@ -246,7 +246,7 @@ int main(int argc, char const *argv[]) {
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									memset(buff, '\0', buff_len);
 									recv(client_fd, buff, buff_len, MSG_WAITALL);
-									cout << "buff: " << buff << endl;
+									// cout << "buff: " << buff << endl;
 									httpResponse = buff;
 									line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 									file.open(root/filename, ios::app|ios::out|ios::binary);
@@ -258,12 +258,12 @@ int main(int argc, char const *argv[]) {
 								strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								memset(buff, '\0', buff_len);
-								recv(client_fd, buff, filesize + 51, MSG_WAITALL);
-								cout << "buff: " << buff << endl;
+								recv(client_fd, buff, filesize%4045 + 51, MSG_WAITALL);
+								// cout << "buff: " << buff << endl;
 								httpResponse = buff;
 								line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 								file.open(root/filename, ios::app|ios::out|ios::binary);
-								file.write(line.c_str(), 4045);
+								file.write(line.c_str(), filesize%4045);
 								file.close();
 								cout << "Download " << filename << " successfully" << endl;
 							}
