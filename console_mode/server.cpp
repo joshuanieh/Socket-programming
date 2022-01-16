@@ -337,7 +337,7 @@ int main(int argc, char const *argv[]) {
 
 							file.open((root/allUsername[index]/chattingFriend[index]).string() + ".txt", ios::in);
 							if (file.is_open()) {
-								strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n0");
+								strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 								file.seekg (0, ios::end);
 							    int length = file.tellg();
 							    cout << "len: " << length << endl;
