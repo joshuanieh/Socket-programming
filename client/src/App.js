@@ -70,6 +70,12 @@ function App() {
       // j = 0
       // da = ""
     }
+    else if(fileLength < 0) {
+      displayStatus({
+        type: 'success',
+        msg: 'Downloaded sucessfully'
+      })
+    }
   }, [fileLength])
 
   useEffect(() => {
@@ -599,7 +605,7 @@ function App() {
                                       da = ""
                                     }
                                   }
-
+                                  //////////////////////////////////////////////////////
                                   console.log(da.length)
 
                                   let len = da.length
@@ -652,7 +658,7 @@ function App() {
                               <div className="App-title">
                                 <h2>Choose an option to continue...</h2>
                               </div>
-                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              <Button type="primary" style={{margin: '20px'}} onClick={() => {
                                 /////////////////////sendMessage('List friends')
                                 // http.onload = () => console.log(http.responseText)
                                 // http.send('List friends')
@@ -696,12 +702,12 @@ function App() {
                               }}>
                                 List all friends
                               </Button>
-                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              <Button type="primary" style={{margin: '20px'}} onClick={() => {
                                 setAddFriend(true)
                               }}>
                                 Add friends
                               </Button>
-                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              <Button type="primary" style={{margin: '20px'}} onClick={() => {
                                 const da = "List friends"
                                 const option = {
                                   hostname: cppHostName,
@@ -737,7 +743,7 @@ function App() {
                               }}>
                                 Remove friends
                               </Button>
-                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {
+                              <Button type="primary" style={{margin: '20px'}} onClick={() => {
                                 const da = "List friends"
                                 const option = {
                                   hostname: cppHostName,
@@ -772,6 +778,9 @@ function App() {
                                 setChatRoom(true)
                               }}>
                                 Chat with
+                              </Button>
+                              <Button type="primary" style={{margin: '20px'}} danger onClick={() => {setOptions(false)}}>
+                                Log out
                               </Button>
                             </>
                           }

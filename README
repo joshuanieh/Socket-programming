@@ -1,0 +1,22 @@
+This project is done by B07502027 Chia Jen Joshua Nieh and B07502028 Zong Han Jimmy Wu.
+
+EXECUTION
+    WEB
+        Under b07502028/server/
+            make
+            ./server 4000 (if you want to change ip and port modify them in b07502028/client/src/App.js line 10 and 11)
+        Under b07502028/client/
+            yarn
+            yarn server
+            yarn start
+
+    CONSOLE
+        Under b07502028/console_mode/
+            make
+            ./server [port]
+            ./client [ip:port] (Files to be uploaded and downloaded files should be in b07502028/console_mode/client_dir/)
+
+THIRD-PARTY PACKAGES
+    react: 11.1.0
+    antd: 4.8.4 (to show pretty frontend components)
+    nodemon: 2.0.6

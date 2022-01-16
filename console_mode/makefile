@@ -12,7 +12,7 @@ client.o: client.cpp
 	g++ -std=c++17 -c $^ -o $@
 
 clean:
-	rm -rf server server.o
+	rm -rf client client.o server server.o
 
 clean_all:
-	rm -rf server server.o client_dir/ public/* password.txt
+	rm -rf client client.o server server.o client_dir/ public/* password.txt
