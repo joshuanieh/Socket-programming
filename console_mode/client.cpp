@@ -76,7 +76,12 @@ int main(int argc, char const *argv[]) {
 		cout << "(4) Choose a chat room" << endl;
 
 		getline(cin, option);
-		num = stoi(option);
+		num = 5;
+		try {
+			num = stoi(option);
+		} catch (const std::exception&){
+			cout << "";
+		}
 		switch(num) {
 			//List all friends
 			case 1: {
@@ -116,11 +121,20 @@ int main(int argc, char const *argv[]) {
 			case 3: {
 				cout << "input a username: " << endl;
 				getline(cin, friendName);
-				sprintf(cnd, "%d\r\n\r\nRemove %s %s", friendName.size() + id.size() + 8, friendName, id);
+				line = "Remove " + friendName + " " + id;
 				strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
-				strcat(httpRequest, cnd);
-				send(client_fd, httpRequest, sizeof(httpRequest), MSG_NOSIGNAL);
-				recv(client_fd, buff, buff_len, MSG_WAITALL);
+				strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
+				send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+				memset(buff, '\0', buff_len);
+				recv(client_fd, buff, buff_len, 0);
+				cout << httpResponse << endl;
+				if(httpResponse.substr(51, string::npos) == "0"){
+					cout << "removed successfully" << endl;
+				}
+				else if(httpResponse.substr(51, string::npos) == "1"){
+					cout << "no friend found" << endl;
+				}
+				break;
 			}
 			case 4: {
 				while(true) {
@@ -224,7 +238,10 @@ int main(int argc, char const *argv[]) {
 					}
 				}
 			}
-			default: break;
+			default: {
+				cout << "Invalid option, please try again." << endl;
+				break;
+			}
 		}
 	}
 	close(client_fd);
