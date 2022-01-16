@@ -10,20 +10,25 @@ fs.mkdir('./client_dir', (err) => {
 const server = http.createServer((req, res) => {
     req.on('data', (msg) => {
         message = msg.toString('utf8')
-        console.log(msg)
+        console.log(message)
         if(message.slice(0, 8) === 'FileName'){
             fileName = message.substr(9)
             console.log(fileName)
             fs.unlink(`./client_dir/${fileName}`, (err) => {
                 console.log(err)
+                res.writeHead(200,{'Access-Control-Allow-Origin':'*'});
+                res.write('OK');
+                res.end();
             });
         }
         else {
             fs.appendFile(`./client_dir/${fileName}`, message, (err) => {
                 console.log(err)
+                res.writeHead(200,{'Access-Control-Allow-Origin':'*'});
+                res.write('OK');
+                res.end();
             })
         }
-        res.writeHead(200,{'Access-Control-Allow-Origin':'*'});
     })
 });
  

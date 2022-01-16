@@ -33,73 +33,68 @@ function App() {
     if(chatting){
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight
     }
-    if(fileLength > 0) {
-      let j = 1
-      while(true){
-        let da = `DownloadImme${id}`
-        // da += reader.result[i]
-        // i++; j++
-        let option = {
-          hostname: cppHostName,
-          port: cppPort,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain',
-            'Content-Length': da.length
-          }
-        }
-        let req = http.request(option, res => {
-          // console.log(`statusCode: ${res.statusCode}`)
-          res.on('data', d => {
-            setFileString(d.toString('utf8'))
-            // console.log(d)
-            // for(var i=0; i<d.length; i++){
-            //   fileString += String.fromCharCode(d[i])
-            // }
-            // console.log(fileString)
-            // console.log(fileString.length)
-          })
-        })
-        req.on('error', error => {
-          console.error(error)
-        })
-        req.write(da);
-        req.end()
-        // j = 0
-        // da = ""
-        if (fileLength - 4045 * j < 0) {
-          setFileLength(0)
-          break
-        }
-        else {
-          j++
-        }
-      }
-    }
-  })
-
+  }, [chatting])
   useEffect(() => {
-    console.log(fileString)
-    if(fileString !== "") {
-      let _option = {
-        hostname: jsHostName,
-        port: 5000,
+    if(fileLength > 0) {
+      // let j = 1
+      // while(true){
+      let da = `DownloadImme${id}`
+      // da += reader.result[i]
+      // i++; j++
+      let option = {
+        hostname: cppHostName,
+        port: cppPort,
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
-          'Content-Length': fileString.length
+          'Content-Length': da.length
         }
       }
-      let _req = http.request(_option, _res => {
-        console.log(_res)
-        setFileString("")
+      let req = http.request(option, res => {
+        // console.log(`statusCode: ${res.statusCode}`)
+        res.on('data', d => {
+          setFileString(d.toString('utf8'))
+          // console.log(d)
+          // for(var i=0; i<d.length; i++){
+          //   fileString += String.fromCharCode(d[i])
+          // }
+          // console.log(fileString)
+          // console.log(fileString.length)
+        })
       })
-      _req.on('error', error => {
+      req.on('error', error => {
         console.error(error)
       })
-      _req.write(`${fileString}`);
-      _req.end()
+      req.write(da);
+      req.end()
+      // j = 0
+      // da = ""
     }
+  }, [fileLength])
+
+  useEffect(() => {
+    console.log(fileString)
+    // if(fileString !== "") {
+    let _option = {
+      hostname: jsHostName,
+      port: 5000,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+        'Content-Length': fileString.length
+      }
+    }
+    let _req = http.request(_option, _res => {
+      console.log(_res)
+      // setFileString("")
+      setFileLength(fileLength - 4045)
+    })
+    _req.on('error', error => {
+      console.error(error)
+    })
+    _req.write(`${fileString}`);
+    _req.end()
+    // }
   }, [fileString])
 
   const bodyRef = useRef(null)
@@ -357,7 +352,7 @@ function App() {
                                       messageString = messageString.slice(0,-1)
                                       // console.log(messageString)
                                       const copy = messageString.split('\n')
-                                      copy.splice(0, 1)
+                                      // copy.splice(0, 1)
                                       // console.log(copy)
                                       setMessagesList(copy)
                                     })
@@ -636,7 +631,7 @@ function App() {
                                   req.end()
                                   setMessagesList([...messagesList, `FA: ${file.name}`])
                                 };
-                                reader.readAsArrayBuffer(file);
+                                reader.readAsBinaryString(file);
 
                                 // Prevent upload
                                 return false;
