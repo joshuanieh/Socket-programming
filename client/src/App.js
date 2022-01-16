@@ -6,6 +6,10 @@ const http = require('http');
 
 function App() {
 
+  // ip and port can be modified
+  const cppHostName = '127.0.0.1'
+  const cppPort = 4000
+
   const [id, setID] = useState(0)
   const [username, setUsername] = useState('')
 
@@ -37,7 +41,7 @@ function App() {
         // i++; j++
         let option = {
           hostname: cppHostName,
-          port: 4000,
+          port: cppPort,
           method: 'POST',
           headers: {
             'Content-Type': 'text/plain',
@@ -99,8 +103,6 @@ function App() {
   }, [fileString])
 
   const bodyRef = useRef(null)
-
-  const cppHostName = '127.0.0.1'
   const jsHostName = '127.0.0.1'
   const MAX_SIZE_OF_DATA = 3000;
   const displayStatus = (s) => {
@@ -150,7 +152,7 @@ function App() {
                 const data = `Login${username} ${passwd}`
                 const option = {
                   hostname: cppHostName,
-                  port: 4000,
+                  port: cppPort,
                   method: 'POST',
                   headers: {
                     'Content-Type': 'text/plain',
@@ -230,7 +232,7 @@ function App() {
                           const data = `Add ${msg} ${id}`
                           const option = {
                             hostname: cppHostName,
-                            port: 4000,
+                            port: cppPort,
                             method: 'POST',
                             headers: {
                               'Content-Type': 'text/plain',
@@ -287,7 +289,7 @@ function App() {
                               const data = `Remove ${e} ${id}`
                               const option = {
                                 hostname: cppHostName,
-                                port: 4000,
+                                port: cppPort,
                                 method: 'POST',
                                 headers: {
                                   'Content-Type': 'text/plain',
@@ -337,7 +339,7 @@ function App() {
                                   const data = `Chat ${e} ${id}`
                                   const option = {
                                     hostname: cppHostName,
-                                    port: 4000,
+                                    port: cppPort,
                                     method: 'POST',
                                     headers: {
                                       'Content-Type': 'text/plain',
@@ -402,7 +404,7 @@ function App() {
                                           let da = `Download${id} ${e.slice(4)}`
                                           let option = {
                                             hostname: cppHostName,
-                                            port: 4000,
+                                            port: cppPort,
                                             method: 'POST',
                                             headers: {
                                               'Content-Type': 'text/plain',
@@ -447,11 +449,10 @@ function App() {
                                         ) : (
                                           <p key={i} align="left">
                                             <Tag color="#389e0d" onClick={() => {
-                                              console.log("Here")
                                               let da = `Download${id} ${e.slice(4)}`
                                               let option = {
                                                 hostname: cppHostName,
-                                                port: 4000,
+                                                port: cppPort,
                                                 method: 'POST',
                                                 headers: {
                                                   'Content-Type': 'text/plain',
@@ -461,7 +462,8 @@ function App() {
                                               let req = http.request(option, res => {
                                                 // console.log(`statusCode: ${res.statusCode}`)
                                                 res.on('data', d => {
-                                                  // console.log(d)
+                                                  console.log(parseInt(d.toString('utf8')))
+                                                  setFileLength(parseInt(d.toString('utf8')))
                                                 })
                                               })
                                               req.on('error', error => {
@@ -469,35 +471,24 @@ function App() {
                                               })
                                               req.write(da)
                                               req.end()
-
-                                              while(true){
-                                                da = `DownloadImme${id}`
-                                                // da += reader.result[i]
-                                                // i++; j++
-                                                option = {
-                                                  hostname: cppHostName,
-                                                  port: 4000,
-                                                  method: 'POST',
-                                                  headers: {
-                                                    'Content-Type': 'text/plain',
-                                                    'Content-Length': da.length
-                                                  }
+    
+                                              let _option = {
+                                                hostname: jsHostName,
+                                                port: 5000,
+                                                method: 'POST',
+                                                headers: {
+                                                  'Content-Type': 'text/plain',
+                                                  'Content-Length': e.slice(4).length
                                                 }
-                                                req = http.request(option, res => {
-                                                  // console.log(`statusCode: ${res.statusCode}`)
-                                                  res.on('data', d => {
-                                                    console.log(d)
-                                                  })
-                                                })
-                                                req.on('error', error => {
-                                                  console.error(error)
-                                                })
-                                                req.write(da);
-                                                req.end()
-                                                // j = 0
-                                                // da = ""
-                                                break
                                               }
+                                              let _req = http.request(_option, _res => {
+                                                console.log(_res)
+                                              })
+                                              _req.on('error', error => {
+                                                console.error(error)
+                                              })
+                                              _req.write(`FileName ${e.slice(4)}`);
+                                              _req.end()
                                             }}>{e.slice(4)}</Tag>
                                           </p> 
                                         )
@@ -525,7 +516,7 @@ function App() {
                                     const da = `Text${id} ${msg}`
                                     const option = {
                                       hostname: cppHostName,
-                                      port: 4000,
+                                      port: cppPort,
                                       method: 'POST',
                                       headers: {
                                         'Content-Type': 'text/plain',
@@ -561,7 +552,7 @@ function App() {
                                   let da = `FileName${id} ${file.name}`
                                   let option = {
                                     hostname: cppHostName,
-                                    port: 4000,
+                                    port: cppPort,
                                     method: 'POST',
                                     headers: {
                                       'Content-Type': 'text/plain',
@@ -590,7 +581,7 @@ function App() {
                                     if(j === MAX_SIZE_OF_DATA - id.length - 9){
                                       option = {
                                         hostname: cppHostName,
-                                        port: 4000,
+                                        port: cppPort,
                                         method: 'POST',
                                         headers: {
                                           'Content-Type': 'text/plain',
@@ -621,7 +612,7 @@ function App() {
                                   da = `FileFinish${id} ${len} ${da}`
                                   option = {
                                     hostname: cppHostName,
-                                    port: 4000,
+                                    port: cppPort,
                                     method: 'POST',
                                     headers: {
                                       'Content-Type': 'text/plain',
@@ -677,7 +668,7 @@ function App() {
                                 const da = "List friends"
                                 const option = {
                                   hostname: cppHostName,
-                                  port: 4000,
+                                  port: cppPort,
                                   method: 'POST',
                                   headers: {
                                     'Content-Type': 'text/plain',
@@ -719,7 +710,7 @@ function App() {
                                 const da = "List friends"
                                 const option = {
                                   hostname: cppHostName,
-                                  port: 4000,
+                                  port: cppPort,
                                   method: 'POST',
                                   headers: {
                                     'Content-Type': 'text/plain',
@@ -755,7 +746,7 @@ function App() {
                                 const da = "List friends"
                                 const option = {
                                   hostname: cppHostName,
-                                  port: 4000,
+                                  port: cppPort,
                                   method: 'POST',
                                   headers: {
                                     'Content-Type': 'text/plain',
