@@ -15,4 +15,4 @@ clean:
 	rm -rf server server.o
 
 clean_all:
-	rm -rf server server.o ../client/client_dir/ public/* password.txt
+	rm -rf server server.o client_dir/ public/* password.txt

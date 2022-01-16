@@ -177,9 +177,7 @@ int main(int argc, char const *argv[]) {
 									while(file.peek() != EOF) {
 										strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 										line = "FileImme" + id + " ";
-										memset(buff, '\0', buff_len);
 										file.read(buff, 3000 - line.size());
-										cout << buff << endl;
 										if(strlen(buff) != 3000 - line.size()) break;
 										line += buff;
 										strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
