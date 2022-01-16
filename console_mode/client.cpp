@@ -236,6 +236,7 @@ int main(int argc, char const *argv[]) {
 									continue;
 								}
 								filesize = atoll(buff);
+								cout << "filesize: " << filesize << endl;
 								file.open(root/filename, ios::out|ios::binary);
 								file.close();
 								for(long long l = 0; l < (filesize/4045); l++) {
