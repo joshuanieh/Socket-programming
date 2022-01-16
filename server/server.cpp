@@ -313,14 +313,14 @@ int main(int argc, char const *argv[]) {
 							name = data.substr(7, sep - 7);
 	        				index = stoi(data.substr(sep + 1));
 
-							remove(((root/allUsername[index]/name).string() + ".txt").c_str());
+							int res = remove(((root/allUsername[index]/name).string() + ".txt").c_str());
 							filesystem::remove_all(root/allUsername[index]/name);
 
 							remove(((root/name/allUsername[index]).string() + ".txt").c_str());
 							filesystem::remove_all(root/name/allUsername[index]);
 
 							strcpy(httpResponse, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
-				    		strcat(httpResponse, "0");
+				    		strcat(httpResponse, to_string(res).c_str());
 						    send(sockets[i], httpResponse, strlen(httpResponse), MSG_NOSIGNAL);
 							cout << httpResponse << endl;
 							close(sockets[i]);
