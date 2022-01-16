@@ -171,7 +171,9 @@ int main(int argc, char const *argv[]) {
 								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 								strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
-								cout << "text sent successfully" << endl;
+								recv(client_fd, buff, buff_len, 0);
+								memset(buff, '\0', buff_len);
+								cout << "Text sent successfully" << endl;
 							}
 							else if(command == "Upload") {
 								if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
@@ -185,26 +187,35 @@ int main(int argc, char const *argv[]) {
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 									strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+									recv(client_fd, buff, buff_len, 0);
+									memset(buff, '\0', buff_len);
 									
 									while(file.peek() != EOF) {
 										strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 										line = "FileImme" + id + " ";
 										memset(buff, '\0', buff_len);
 										file.read(buff, 3000 - line.size());
-										cout << buff << endl;
+										// cout << buff << endl;
 										if(strlen(buff) != 3000 - line.size()) break;
+										cout << "buff: " << buff << endl;
 										line += buff;
 										strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 										send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+										recv(client_fd, buff, buff_len, 0);
+										memset(buff, '\0', buff_len);
 									}
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 									line = "FileFinish" + id + " " + to_string(strlen(buff)) + " " + buff;
-									char endZero[3000 - line.size()] = {'-'};
+									char endZero[3000 - line.size()];
+									memset(endZero, '-', 3000 - line.size());
 									line += endZero;
+									cout << "line: " << line << endl;
 									strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+									recv(client_fd, buff, buff_len, 0);
+									memset(buff, '\0', buff_len);
 									file.close();
-									cout << "upload " << filename << " successfully" << endl;
+									cout << "Upload " << filename << " successfully" << endl;
 								}
 							  	else cout << "The " << filename << " doesn't exist" << endl;
 							}
@@ -251,7 +262,7 @@ int main(int argc, char const *argv[]) {
 								file.open(root/filename, ios::app|ios::out|ios::binary);
 								file.write(line.c_str(), 4045);
 								file.close();
-								cout << "get " << filename << " successfully" << endl;
+								cout << "Download " << filename << " successfully" << endl;
 							}
 							else {
 								cout << "Command not found" << endl;
