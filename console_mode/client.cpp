@@ -155,12 +155,24 @@ int main(int argc, char const *argv[]) {
 						cout << "invalid friend name" << endl;
 					}
 					else {
-						cout << "Please type \"Text ...\" or \"Download ...\" or \"Upload ...\" (or \"quit\" to return)" << endl;
+						cout << httpResponse.substr(httpResponse.find("\r\n\r\n") + 4) << endl;
+						cout << "Please type \"Text <text>\" or \"Download <filename>\" or \"Upload <filename>\" (or \"quit\" to return)" << endl;
 						while(true) {
 							getline(cin, line);
 							pos = line.find(" ");
 							command = line.substr(0, pos);
 							if(command == "quit") break;
+							else if(command == "Text") {
+								if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
+									cout << "Command format error" << endl;
+									continue;
+								}
+								line = "Text" + id + " " + line.substr(pos + 1);;
+								strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
+								strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
+								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
+								cout << "text sent successfully" << endl;
+							}
 							else if(command == "Upload") {
 								if(line.find(" ", pos + 1) != string::npos || pos == string::npos) {
 									cout << "Command format error" << endl;
@@ -187,6 +199,8 @@ int main(int argc, char const *argv[]) {
 									}
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 									line = "FileFinish" + id + " " + to_string(strlen(buff)) + " " + buff;
+									char endZero[3000 - line.size()] = {'-'};
+									line += endZero;
 									strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									file.close();
