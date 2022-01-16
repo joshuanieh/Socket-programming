@@ -231,11 +231,12 @@ int main(int argc, char const *argv[]) {
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								memset(buff, '\0', buff_len);
 								recv(client_fd, buff, buff_len, 0);
-								if(strcmp(buff, "x") == 0) {
+								httpResponse = buff;
+								if(httpResponse.substr(httpResponse.find("\r\n\r\n") + 4)[0] == 'x') {
 									cout << "The " << filename << " doesn't exist" << endl;
 									continue;
 								}
-								filesize = atoll(buff);
+								filesize = atoll(httpResponse.substr(httpResponse.find("\r\n\r\n") + 4));
 								file.open(root/filename, ios::out|ios::binary);
 								file.close();
 								for(long long l = 0; l < (filesize/4045); l++) {
