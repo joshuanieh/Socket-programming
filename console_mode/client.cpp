@@ -238,13 +238,14 @@ int main(int argc, char const *argv[]) {
 								filesize = atoll(buff);
 								file.open(root/filename, ios::out|ios::binary);
 								file.close();
-								for(long long l = 0; l < (filesize/buff_len); l++) {
+								for(long long l = 0; l < (filesize/4045); l++) {
 									line = "DownloadImme" + id;
 									strcpy(httpRequest, "POST / HTTP/1.1\r\nContent-Length: ");
 									strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 									send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 									memset(buff, '\0', buff_len);
-									recv(client_fd, buff, buff_len, 0);
+									recv(client_fd, buff, buff_len, MSG_WAITALL);
+									cout << "buff: " << buff << endl;
 									httpResponse = buff;
 									line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 									file.open(root/filename, ios::app|ios::out|ios::binary);
@@ -256,7 +257,8 @@ int main(int argc, char const *argv[]) {
 								strcat(httpRequest, (to_string(line.size()) + "\r\n\r\n" + line).c_str());
 								send(client_fd, httpRequest, strlen(httpRequest), MSG_NOSIGNAL);
 								memset(buff, '\0', buff_len);
-								recv(client_fd, buff, buff_len, 0);
+								recv(client_fd, buff, filesize + 51, MSG_WAITALL);
+								cout << "buff: " << buff << endl;
 								httpResponse = buff;
 								line = httpResponse.substr(httpResponse.find("\r\n\r\n") + 4);
 								file.open(root/filename, ios::app|ios::out|ios::binary);
